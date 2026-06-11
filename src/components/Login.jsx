@@ -46,12 +46,12 @@ export default function Login({ onLoginSuccess }) {
         </div>
 
         {isMock && (
-          <div className="db-info-box" style={{ borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.05)' }}>
-            <div className="db-info-header" style={{ color: '#f59e0b' }}>
+          <div className="db-info-box" style={{ borderColor: 'var(--color-accent)', backgroundColor: 'rgba(140, 78, 55, 0.05)' }}>
+            <div className="db-info-header" style={{ color: 'var(--color-accent)' }}>
               <Database size={16} />
               <span>Modalità Dispositivo (Locale)</span>
             </div>
-            <p style={{ color: '#d97706', fontSize: '12px' }}>
+            <p style={{ color: 'var(--color-accent)', fontSize: '12px' }}>
               Nessun database remoto configurato. La prima password che inserirai diventerà la password per questo browser. I dati verranno salvati solo in locale.
             </p>
           </div>

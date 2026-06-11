@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
-import { LayoutDashboard, Clock, Calendar, Settings as SettingsIcon, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
+import { LayoutDashboard, BarChart2, Calendar, Settings as SettingsIcon, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
-import TimerWidget from './components/TimerWidget';
+import Analysis from './components/Analysis';
 import SessionList from './components/SessionList';
 import Settings from './components/Settings';
 
@@ -269,16 +269,17 @@ export default function App() {
   const renderView = () => {
     switch (activeView) {
       case 'dashboard':
-        return <Dashboard sessions={sessions} />;
-      case 'timer':
         return (
-          <TimerWidget
+          <Dashboard 
+            sessions={sessions} 
             hourlyRate={hourlyRate}
-            onSaveSession={handleSaveSession}
             activeTimer={activeTimer}
             setActiveTimer={setActiveTimer}
+            onSaveSession={handleSaveSession}
           />
         );
+      case 'analysis':
+        return <Analysis sessions={sessions} hourlyRate={hourlyRate} />;
       case 'sessions':
         return (
           <SessionList
@@ -302,7 +303,15 @@ export default function App() {
           />
         );
       default:
-        return <Dashboard sessions={sessions} />;
+        return (
+          <Dashboard 
+            sessions={sessions} 
+            hourlyRate={hourlyRate}
+            activeTimer={activeTimer}
+            setActiveTimer={setActiveTimer}
+            onSaveSession={handleSaveSession}
+          />
+        );
     }
   };
 
@@ -336,10 +345,10 @@ export default function App() {
         )}
       </header>
 
-      {/* Banner fluttuante se c'è un timer attivo in background (non nella vista timer) */}
-      {activeTimer && activeView !== 'timer' && (
+      {/* Banner fluttuante se c'è un timer attivo in background (non nella vista dashboard) */}
+      {activeTimer && activeView !== 'dashboard' && (
         <div style={{ padding: '16px 20px 0 20px' }}>
-          <div className="mini-timer-banner" onClick={() => setActiveView('timer')}>
+          <div className="mini-timer-banner" onClick={() => setActiveView('dashboard')}>
             <div className="mini-timer-info">
               <div className="mini-timer-pulse"></div>
               <div>
@@ -370,16 +379,11 @@ export default function App() {
         </button>
 
         <button
-          className={`nav-item ${activeView === 'timer' ? 'active' : ''}`}
-          onClick={() => setActiveView('timer')}
+          className={`nav-item ${activeView === 'analysis' ? 'active' : ''}`}
+          onClick={() => setActiveView('analysis')}
         >
-          <div style={{ position: 'relative' }}>
-            <Clock />
-            {activeTimer && !activeTimer.isPaused && (
-              <div style={{ position: 'absolute', right: '-2px', top: '-2px', width: '8px', height: '8px', backgroundColor: 'var(--color-brand)', borderRadius: '50%' }}></div>
-            )}
-          </div>
-          <span>Timer</span>
+          <BarChart2 />
+          <span>Analisi</span>
         </button>
 
         <button

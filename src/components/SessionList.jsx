@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Edit2, Calendar, Clock, FileText, X, AlertTriangle } from 'lucide-react';
+import { roundHours, getRoundedEarnings } from '../utils/rounding';
 
 export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onDeleteSession }) {
   // Stati per il form di inserimento manuale
@@ -203,14 +204,14 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
           </div>
 
           {liveDuration > 0 && (
-            <div className="db-info-box" style={{ display: 'flex', justifyContent: 'space-between', border: '1px solid rgba(16, 185, 129, 0.2)', backgroundColor: 'rgba(16, 185, 129, 0.02)' }}>
-              <div>
-                <strong>Durata: </strong>
-                <span>{formatHoursAndMinutes(liveDuration)}</span>
+            <div className="db-info-box" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Durata reale: <strong>{formatHoursAndMinutes(liveDuration)}</strong></span>
+                <span>Guadagno reale: <strong>€{liveEarnings.toFixed(2)}</strong></span>
               </div>
-              <div style={{ color: 'var(--color-success)', fontWeight: '600' }}>
-                <strong>Guadagno stimato: </strong>
-                <span>€{liveEarnings.toFixed(2)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(115, 120, 116, 0.15)', paddingTop: '8px', color: 'var(--color-brand)', fontWeight: '600' }}>
+                <span>Durata arrotondata: <strong>{roundHours(liveDuration).toFixed(1)}h</strong></span>
+                <span>Guadagno arrotondato: <strong>€{getRoundedEarnings(liveDuration, hourlyRate).toFixed(2)}</strong></span>
               </div>
             </div>
           )}
