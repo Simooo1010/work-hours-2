@@ -899,28 +899,13 @@ input:focus, select:focus, textarea:focus {
     padding-bottom: 0 !important;
   }
   
-  /* Hide interactive layouts */
+  /* Hide interactive layouts and other elements not meant for print */
   .header,
   .nav-bar,
   .mini-timer-banner,
-  .btn,
-  .btn-icon,
-  .month-selector,
-  .toggle-container,
-  .export-panel,
-  form,
-  .timer-container,
-  .modal-overlay,
-  .card-title svg {
+  .view-content > *:not(.print-document),
+  .modal-overlay {
     display: none !important;
-  }
-  
-  .card {
-    background: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin-bottom: 24px !important;
   }
   
   /* Printable invoice structure */

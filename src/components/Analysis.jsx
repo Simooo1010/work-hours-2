@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar, DollarSign, Clock, ChevronLeft, ChevronRight, TrendingUp, Printer } from 'lucide-react';
+import { Calendar, DollarSign, ChevronLeft, ChevronRight, TrendingUp, Printer } from 'lucide-react';
 import { roundHours, getRoundedEarnings, formatHoursAndMinutes } from '../utils/rounding';
 
 const MONTHS_IT = [
@@ -262,25 +262,6 @@ export default function Analysis({ sessions, hourlyRate }) {
     window.print();
   };
 
-  const formattedExportPeriodLabel = useMemo(() => {
-    if (!exportPeriod) return '';
-    if (exportType === 'month') {
-      return formattedMonthLabel(exportPeriod);
-    } else {
-      const mon = new Date(exportPeriod);
-      const sun = new Date(mon);
-      sun.setDate(mon.getDate() + 6);
-      
-      const fDay = (d) => `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')}`;
-      return `Settimana del ${fDay(mon)} al ${fDay(sun)}`;
-    }
-  }, [exportType, exportPeriod]);
-
-  const formattedDateItLong = (dateStr) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
-  };
-
   return (
     <div className="view-content">
       {/* SELETTORE LIVELLO ARROTONDAMENTO */}
@@ -321,7 +302,7 @@ export default function Analysis({ sessions, hourlyRate }) {
 
       {/* 2. REPORT SETTIMANALE CON GRAFICO */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ display: 'flex', justifyBetween: 'space-between', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div className="card-title" style={{ marginBottom: '0' }}>
             <Calendar size={18} color={roundingApplied ? 'var(--color-brand)' : 'var(--color-accent)'} />
             <span>Rendimento Settimanale</span>
@@ -395,7 +376,7 @@ export default function Analysis({ sessions, hourlyRate }) {
       {/* 3. REPORT MENSILE CON TABS */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="card-title">
-          <DollarSign size={18} color={roundingApplied ? 'var(--color-brand)' : 'var(--color-accent)'} />
+          <Calendar size={18} color={roundingApplied ? 'var(--color-brand)' : 'var(--color-accent)'} />
           <span>Statistiche Mensili</span>
         </div>
 
@@ -425,57 +406,30 @@ export default function Analysis({ sessions, hourlyRate }) {
             </span>
           </div>
         </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-secondary)', padding: '0 4px' }}>
-          <span>Sessioni registrate nel mese:</span>
-          <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
-            {selectedMonthStats.sessions?.length || 0}
-          </span>
-        </div>
       </div>
 
-      {/* 4. SEZIONE ESPORTAZIONE ORE (PDF/DOCUMENTO) */}
+      {/* 4. ESPORTAZIONE TABELLA E TOTALI ORE/GUADAGNO */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="card-title">
           <Printer size={18} color="var(--color-brand)" />
           <span>Esportazione Ore (Arrotondate)</span>
         </div>
 
-        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-          Configura e genera una ricevuta ore in formato documento PDF per la contabilità del tuo principale. L'arrotondamento alla mezz'ora decimale più vicina verrà applicato automaticamente.
-        </p>
-
-        <div className="export-panel">
-          <div className="form-group" style={{ marginBottom: '10px' }}>
-            <label>Tipo di Periodo</label>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', cursor: 'pointer' }}>
-                <input 
-                  type="radio" 
-                  name="exportType" 
-                  value="month" 
-                  checked={exportType === 'month'}
-                  onChange={() => setExportType('month')}
-                  style={{ width: '18px', height: '18px', accentColor: 'var(--color-brand)' }}
-                />
-                Mensile
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', cursor: 'pointer' }}>
-                <input 
-                  type="radio" 
-                  name="exportType" 
-                  value="week" 
-                  checked={exportType === 'week'}
-                  onChange={() => setExportType('week')}
-                  style={{ width: '18px', height: '18px', accentColor: 'var(--color-brand)' }}
-                />
-                Settimanale
-              </label>
-            </div>
+        <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+          <div className="form-group" style={{ flex: 1, marginBottom: '0' }}>
+            <label>Tipo Periodo</label>
+            <select 
+              value={exportType} 
+              onChange={(e) => setExportType(e.target.value)}
+              style={{ borderRadius: '8px', padding: '10px' }}
+            >
+              <option value="month">Mensile</option>
+              <option value="week">Settimanale</option>
+            </select>
           </div>
-
-          <div className="form-group">
-            <label>Seleziona Periodo</label>
+          
+          <div className="form-group" style={{ flex: 1, marginBottom: '0' }}>
+            <label>Seleziona Data</label>
             <select 
               value={exportPeriod} 
               onChange={(e) => setExportPeriod(e.target.value)}
@@ -498,136 +452,84 @@ export default function Analysis({ sessions, hourlyRate }) {
               )}
             </select>
           </div>
-
-          {exportSessions.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '8px' }}>
-              {/* ANTEPRIMA DOCUMENTO */}
-              <div className="print-document-screen">
-                <h3>Resoconto Pagamento Ore</h3>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '16px', color: 'var(--text-secondary)' }}>
-                  <div>
-                    <strong>Periodo:</strong> {formattedExportPeriodLabel}<br />
-                    <strong>Tariffa Oraria:</strong> €{Number(hourlyRate).toFixed(2)} / ora
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <strong>Data Report:</strong> {new Date().toLocaleDateString('it-IT')}
-                  </div>
-                </div>
-
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Data</th>
-                      <th>Note</th>
-                      <th style={{ textAlign: 'right' }}>Ore Effettive</th>
-                      <th style={{ textAlign: 'right' }}>Ore Arrotondate</th>
-                      <th style={{ textAlign: 'right' }}>Subtotale</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {exportSessions.map(s => {
-                      const rHours = roundHours(Number(s.duration_hours));
-                      const rEarnings = rHours * Number(s.hourly_rate);
-                      return (
-                        <tr key={s.id}>
-                          <td>{new Date(s.date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })}</td>
-                          <td style={{ fontStyle: 'italic' }}>{s.notes || 'Lavoro ordinario'}</td>
-                          <td style={{ textAlign: 'right' }}>{Number(s.duration_hours).toFixed(2)}h</td>
-                          <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{rHours.toFixed(1)}h</td>
-                          <td style={{ textAlign: 'right', color: 'var(--color-brand)', fontWeight: '600' }}>€{rEarnings.toFixed(2)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-
-                <div className="total-summary">
-                  <div style={{ textAlign: 'right', fontSize: '14px', lineHeight: '1.8' }}>
-                    <div>Ore Reali Totali: <strong>{exportTotals.rawHours.toFixed(2)}h</strong></div>
-                    <div>Ore Arrotondate Totali: <strong>{exportTotals.roundedHours.toFixed(1)}h</strong></div>
-                    <div style={{ fontSize: '16px', borderTop: '1px solid #ccc', marginTop: '6px', paddingTop: '6px' }}>
-                      Totale Compenso: <strong style={{ color: 'var(--color-brand)' }}>€{exportTotals.earnings.toFixed(2)}</strong>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* PULSANTE DI CONTROLLO ESPORTAZIONE (STAMPA/SALVA) */}
-              <button className="btn btn-primary" onClick={handlePrint}>
-                <Printer size={18} />
-                Stampa o Salva PDF
-              </button>
-            </div>
-          ) : (
-            <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px 0', fontSize: '13px' }}>
-              Nessuna sessione registrata nel periodo selezionato.
-            </p>
-          )}
         </div>
+
+        {exportSessions.length > 0 ? (
+          <div className="export-panel" style={{ border: 'none', paddingTop: '0', marginTop: '8px' }}>
+            {/* ANTEPRIMA A SCHERMO: SOLO TABELLA E DUE RIGHE CON I TOTALI */}
+            <div className="print-document-screen" style={{ border: '1px solid var(--border-color)', borderRadius: '12px', padding: '20px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
+                    <th style={{ padding: '8px 4px', width: '20%' }}>Data</th>
+                    <th style={{ padding: '8px 4px', width: '40%' }}>Descrizione Lavoro / Note</th>
+                    <th style={{ padding: '8px 4px', width: '20%', textAlign: 'right' }}>Ore Effettive</th>
+                    <th style={{ padding: '8px 4px', width: '20%', textAlign: 'right' }}>Ore Arrotondate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {exportSessions.map(s => {
+                    const rHours = roundHours(Number(s.duration_hours));
+                    return (
+                      <tr key={s.id} style={{ borderBottom: '1px solid var(--bg-tertiary)' }}>
+                        <td style={{ padding: '10px 4px' }}>{new Date(s.date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: '2-digit' })}</td>
+                        <td style={{ padding: '10px 4px', fontStyle: 'italic', color: 'var(--text-secondary)' }}>{s.notes || 'Lavoro ordinario'}</td>
+                        <td style={{ padding: '10px 4px', textAlign: 'right' }}>{Number(s.duration_hours).toFixed(2)}h</td>
+                        <td style={{ padding: '10px 4px', textAlign: 'right', fontWeight: 'bold' }}>{rHours.toFixed(1)}h</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginTop: '20px', fontSize: '14px', lineHeight: '1.6' }}>
+                <div>Totale Ore Arrotondate: <strong>{exportTotals.roundedHours.toFixed(1)} ore</strong></div>
+                <div style={{ color: 'var(--color-brand)', fontWeight: 'bold' }}>Totale Guadagno: <strong>€{exportTotals.earnings.toFixed(2)}</strong></div>
+              </div>
+            </div>
+
+            {/* PULSANTE STAMPA */}
+            <button className="btn btn-primary" onClick={handlePrint} style={{ marginTop: '8px' }}>
+              <Printer size={18} />
+              Esporta PDF / Stampa
+            </button>
+          </div>
+        ) : (
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px 0', fontSize: '13px' }}>
+            Nessuna sessione registrata nel periodo selezionato.
+          </p>
+        )}
       </div>
 
-      {/* CONTAINER INVISIBILE A SCHERMO - UTILIZZATO SOLO PER LA STAMPA FISICA O SALVATAGGIO PDF */}
-      <div className="print-document" style={{ display: 'none' }}>
-        <div className="print-header">
-          <div>
-            <div className="print-title">RESOCONTO ORE LAVORATIVE</div>
-            <div>Documento riepilogativo per il pagamento</div>
-          </div>
-          <div className="print-meta">
-            <strong>Data Emissione:</strong> {new Date().toLocaleDateString('it-IT')}<br />
-            <strong>Periodo:</strong> {formattedExportPeriodLabel}<br />
-            <strong>Tariffa Oraria Applicata:</strong> €{Number(hourlyRate).toFixed(2)} / ora
-          </div>
-        </div>
+      {/* DOCUMENTO DI STAMPA A4 INVISIBILE A SCHERMO (stampa solo tabella e totali) */}
+      <div className="print-document" style={{ display: 'none', color: '#000000', fontSize: '11pt', padding: '10px' }}>
+        <table className="print-table" style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+          <thead>
+            <tr style={{ background: '#f5f5f5' }}>
+              <th style={{ border: '1px solid #dddddd', padding: '10px 8px', fontWeight: 'bold', width: '20%' }}>Data</th>
+              <th style={{ border: '1px solid #dddddd', padding: '10px 8px', fontWeight: 'bold', width: '40%' }}>Descrizione Attività / Note</th>
+              <th style={{ border: '1px solid #dddddd', padding: '10px 8px', fontWeight: 'bold', width: '20%', textAlign: 'right' }}>Ore Effettive</th>
+              <th style={{ border: '1px solid #dddddd', padding: '10px 8px', fontWeight: 'bold', width: '20%', textAlign: 'right' }}>Ore Arrotondate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {exportSessions.map(s => {
+              const rHours = roundHours(Number(s.duration_hours));
+              return (
+                <tr key={s.id}>
+                  <td style={{ border: '1px solid #dddddd', padding: '8px' }}>{new Date(s.date).toLocaleDateString('it-IT')}</td>
+                  <td style={{ border: '1px solid #dddddd', padding: '8px', fontStyle: 'italic' }}>{s.notes || 'Attività lavorativa ordinaria'}</td>
+                  <td style={{ border: '1px solid #dddddd', padding: '8px', textAlign: 'right' }}>{Number(s.duration_hours).toFixed(2)} h</td>
+                  <td style={{ border: '1px solid #dddddd', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>{rHours.toFixed(1)} h</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
 
-        <div>
-          <table className="print-table">
-            <thead>
-              <tr>
-                <th style={{ width: '15%' }}>Data</th>
-                <th style={{ width: '40%' }}>Descrizione Attività</th>
-                <th style={{ width: '15%', textAlign: 'right' }}>Ore Effettive</th>
-                <th style={{ width: '15%', textAlign: 'right' }}>Ore Arrotondate</th>
-                <th style={{ width: '15%', textAlign: 'right' }}>Compenso</th>
-              </tr>
-            </thead>
-            <tbody>
-              {exportSessions.map(s => {
-                const rHours = roundHours(Number(s.duration_hours));
-                const rEarnings = rHours * Number(s.hourly_rate);
-                return (
-                  <tr key={s.id}>
-                    <td>{new Date(s.date).toLocaleDateString('it-IT')}</td>
-                    <td>{s.notes || 'Attività lavorativa ordinaria'}</td>
-                    <td style={{ textAlign: 'right' }}>{Number(s.duration_hours).toFixed(2)}h</td>
-                    <td style={{ textAlign: 'right', fontWeight: 'bold' }}>{rHours.toFixed(1)}h</td>
-                    <td style={{ textAlign: 'right' }}>€{rEarnings.toFixed(2)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="print-summary-box">
-          <div className="print-summary-content">
-            <div className="print-summary-row">
-              <span>Totale Ore Effettive:</span>
-              <span>{exportTotals.rawHours.toFixed(2)} h</span>
-            </div>
-            <div className="print-summary-row">
-              <span>Totale Ore Arrotondate:</span>
-              <span>{exportTotals.roundedHours.toFixed(1)} h</span>
-            </div>
-            <div className="print-summary-row">
-              <span>Tariffa Oraria:</span>
-              <span>€{Number(hourlyRate).toFixed(2)} / h</span>
-            </div>
-            <div className="print-summary-row print-summary-total">
-              <span>Totale da Pagare:</span>
-              <span>€{exportTotals.earnings.toFixed(2)}</span>
-            </div>
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginTop: '20px', fontSize: '12pt', lineHeight: '1.6', borderTop: '2px solid #000000', paddingTop: '10px' }}>
+          <div>Totale Ore Arrotondate: <strong>{exportTotals.roundedHours.toFixed(1)} ore</strong></div>
+          <div style={{ fontSize: '14pt', fontWeight: 'bold' }}>Totale Guadagno: <strong>€{exportTotals.earnings.toFixed(2)}</strong></div>
         </div>
       </div>
     </div>
