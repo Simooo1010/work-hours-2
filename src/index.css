@@ -225,12 +225,14 @@ h1, h2, h3, h4, h5, h6 {
   flex-direction: column;
   gap: 6px;
   margin-bottom: 16px;
+  min-width: 0;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  width: 100%;
 }
 
 label {
@@ -241,6 +243,7 @@ label {
 
 input, select, textarea {
   width: 100%;
+  min-width: 0;
   background: var(--bg-tertiary);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
@@ -250,6 +253,7 @@ input, select, textarea {
   font-size: 16px;
   outline: none;
   transition: var(--transition-fast);
+  box-sizing: border-box;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -1037,4 +1041,103 @@ input:focus, select:focus, textarea:focus {
   margin-top: 16px;
   border-top: 1px solid var(--border-color);
   padding-top: 12px;
+}
+
+/* RESPONSIVE MOBILE FIXES */
+@media (max-width: 480px) {
+  .view-content {
+    padding: 16px;
+    gap: 16px;
+  }
+  .card {
+    padding: 16px;
+    border-radius: 20px;
+  }
+  .stats-grid {
+    gap: 12px;
+  }
+  .stat-box {
+    padding: 14px;
+    border-radius: 12px;
+  }
+  input, select, textarea {
+    padding: 10px 12px;
+    font-size: 15px;
+  }
+  .btn {
+    height: 44px;
+    padding: 0 16px;
+  }
+  .header {
+    padding: 16px 16px 12px 16px;
+  }
+  .nav-bar {
+    height: 72px;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+/* AUTOMATIC DARK MODE */
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+  
+  :root {
+    --bg-primary: #121316;            /* Dark, warm background */
+    --bg-secondary: #1a1c22;          /* Elevated card dark background */
+    --bg-tertiary: #272a31;           /* Container/input dark background */
+    --bg-tertiary-hover: #32363f;
+    
+    --text-primary: #fbf9f8;          /* Warm light text */
+    --text-secondary: #c2c8c2;        /* Muted light text */
+    --text-muted: #8e958f;            /* Outline grey */
+    
+    --color-brand: #7ea38b;           /* Lighter Sage green for dark mode readability */
+    --color-brand-hover: #9bbfa7;
+    --color-brand-light: rgba(126, 163, 139, 0.15);
+    --color-brand-glow: rgba(126, 163, 139, 0.08);
+    
+    --color-success: #7ea38b;
+    
+    --color-accent: #d79577;          /* Lighter Terracotta for dark mode */
+    --color-accent-hover: #e0ab95;
+    --color-accent-light: rgba(215, 149, 119, 0.15);
+    
+    --color-danger: #ffb4ab;
+    --color-danger-hover: #ffdad6;
+    
+    --border-color: #383f3a;          /* Darker borders matching Sage theme */
+    --border-highlight: #8e958f;
+    --glass-bg: rgba(26, 28, 34, 0.85);
+    --glass-border: rgba(142, 149, 143, 0.15);
+    
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 16px 24px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 24px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  .print-document-screen {
+    background: #1a1c22 !important;
+    color: #fbf9f8 !important;
+    border-color: #383f3a !important;
+  }
+  
+  .print-document-screen th {
+    background: #272a31 !important;
+  }
+  
+  .print-document-screen td {
+    border-bottom-color: #272a31 !important;
+  }
+  
+  input, select, textarea {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+  
+  .badge-demo {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+  }
 }
