@@ -457,15 +457,13 @@ export default function Analysis({ sessions, hourlyRate }) {
 
         {exportSessions.length > 0 ? (
           <div className="export-panel" style={{ border: 'none', paddingTop: '0', marginTop: '8px' }}>
-            {/* ANTEPRIMA A SCHERMO: SOLO TABELLA E DUE RIGHE CON I TOTALI */}
             <div className="print-document-screen" style={{ border: '1px solid var(--border-color)', borderRadius: '12px', padding: '20px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
                     <th style={{ padding: '8px 4px', width: '20%' }}>Data</th>
-                    <th style={{ padding: '8px 4px', width: '40%' }}>Descrizione Lavoro / Note</th>
-                    <th style={{ padding: '8px 4px', width: '20%', textAlign: 'right' }}>Ore Effettive</th>
-                    <th style={{ padding: '8px 4px', width: '20%', textAlign: 'right' }}>Ore Arrotondate</th>
+                    <th style={{ padding: '8px 4px', width: '60%' }}>Descrizione Lavoro / Note</th>
+                    <th style={{ padding: '8px 4px', width: '20%', textAlign: 'right' }}>Ore</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -475,12 +473,6 @@ export default function Analysis({ sessions, hourlyRate }) {
                       <tr key={s.id} style={{ borderBottom: '1px solid var(--bg-tertiary)' }}>
                         <td style={{ padding: '10px 4px' }}>{new Date(s.date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: '2-digit' })}</td>
                         <td style={{ padding: '10px 4px', fontStyle: 'italic', color: 'var(--text-secondary)' }}>{s.notes || 'Lavoro ordinario'}</td>
-                        <td style={{ padding: '10px 4px', textAlign: 'right' }}>
-                          <div>{Number(s.duration_hours).toFixed(2)}h</div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                            {s.start_time.substring(0, 5)} - {s.end_time.substring(0, 5)}
-                          </div>
-                        </td>
                         <td style={{ padding: '10px 4px', textAlign: 'right', fontWeight: 'bold' }}>
                           <div>{rHours.toFixed(1)}h</div>
                           <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'normal', marginTop: '2px' }}>
@@ -494,7 +486,7 @@ export default function Analysis({ sessions, hourlyRate }) {
               </table>
 
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginTop: '20px', fontSize: '14px', lineHeight: '1.6' }}>
-                <div>Totale Ore Arrotondate: <strong>{exportTotals.roundedHours.toFixed(1)} ore</strong></div>
+                <div>Totale Ore: <strong>{exportTotals.roundedHours.toFixed(1)} ore</strong></div>
                 <div style={{ color: 'var(--color-brand)', fontWeight: 'bold' }}>Totale Guadagno: <strong>€{exportTotals.earnings.toFixed(2)}</strong></div>
               </div>
             </div>
@@ -518,9 +510,8 @@ export default function Analysis({ sessions, hourlyRate }) {
           <thead>
             <tr style={{ background: '#f5f5f5' }}>
               <th style={{ border: '1px solid #dddddd', padding: '10px 8px', fontWeight: 'bold', width: '20%' }}>Data</th>
-              <th style={{ border: '1px solid #dddddd', padding: '10px 8px', fontWeight: 'bold', width: '40%' }}>Descrizione Attività / Note</th>
-              <th style={{ border: '1px solid #dddddd', padding: '10px 8px', fontWeight: 'bold', width: '20%', textAlign: 'right' }}>Ore Effettive</th>
-              <th style={{ border: '1px solid #dddddd', padding: '10px 8px', fontWeight: 'bold', width: '20%', textAlign: 'right' }}>Ore Arrotondate</th>
+              <th style={{ border: '1px solid #dddddd', padding: '10px 8px', fontWeight: 'bold', width: '60%' }}>Descrizione Attività / Note</th>
+              <th style={{ border: '1px solid #dddddd', padding: '10px 8px', fontWeight: 'bold', width: '20%', textAlign: 'right' }}>Ore</th>
             </tr>
           </thead>
           <tbody>
@@ -530,12 +521,6 @@ export default function Analysis({ sessions, hourlyRate }) {
                 <tr key={s.id}>
                   <td style={{ border: '1px solid #dddddd', padding: '8px' }}>{new Date(s.date).toLocaleDateString('it-IT')}</td>
                   <td style={{ border: '1px solid #dddddd', padding: '8px', fontStyle: 'italic' }}>{s.notes || 'Attività lavorativa ordinaria'}</td>
-                  <td style={{ border: '1px solid #dddddd', padding: '8px', textAlign: 'right' }}>
-                    <div>{Number(s.duration_hours).toFixed(2)} h</div>
-                    <div style={{ fontSize: '9pt', color: '#555555', marginTop: '2px' }}>
-                      {s.start_time.substring(0, 5)} - {s.end_time.substring(0, 5)}
-                    </div>
-                  </td>
                   <td style={{ border: '1px solid #dddddd', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>
                     <div>{rHours.toFixed(1)} h</div>
                     <div style={{ fontSize: '9pt', color: '#555555', fontWeight: 'normal', marginTop: '2px' }}>
@@ -549,7 +534,7 @@ export default function Analysis({ sessions, hourlyRate }) {
         </table>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginTop: '20px', fontSize: '12pt', lineHeight: '1.6', borderTop: '2px solid #000000', paddingTop: '10px' }}>
-          <div>Totale Ore Arrotondate: <strong>{exportTotals.roundedHours.toFixed(1)} ore</strong></div>
+          <div>Totale Ore: <strong>{exportTotals.roundedHours.toFixed(1)} ore</strong></div>
           <div style={{ fontSize: '14pt', fontWeight: 'bold' }}>Totale Guadagno: <strong>€{exportTotals.earnings.toFixed(2)}</strong></div>
         </div>
       </div>
