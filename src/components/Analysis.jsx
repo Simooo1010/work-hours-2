@@ -206,20 +206,58 @@ export default function Analysis({ sessions, hourlyRate }) {
   }, [activeWeekStats]);
 
   // --- STATI E LOGICA PER ESPORTAZIONE PDF / PRINT ---
-  const [exportType, setExportType] = useState('month'); // 'month' | 'week'
+  const [exportType, setExportType] = useState('month'); // 'month' | 'week' | 'custom'
   const [exportPeriod, setExportPeriod] = useState(() => uniqueMonths[0]);
+  const [customSelectedIds, setCustomSelectedIds] = useState([]);
 
   // Sincronizza il periodo quando cambia il tipo di export
   React.useEffect(() => {
     if (exportType === 'month') {
       setExportPeriod(uniqueMonths[0]);
-    } else {
+    } else if (exportType === 'week') {
       setExportPeriod(uniqueWeeks[0]);
     }
   }, [exportType, uniqueMonths, uniqueWeeks]);
 
+  // Inizializza customSelectedIds con tutte le sessioni al primo cambio su 'custom' o quando cambiano le sessioni
+  React.useEffect(() => {
+    if (exportType === 'custom') {
+      const timer = setTimeout(() => {
+        setCustomSelectedIds(prev => {
+          const sessionIds = sessions.map(s => s.id);
+          const allStillExist = prev.every(id => sessionIds.includes(id));
+          if (prev.length === 0 || !allStillExist || prev.length !== sessions.length) {
+            return sessionIds;
+          }
+          return prev;
+        });
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [exportType, sessions]);
+
+  const handleToggleCustomSession = (id) => {
+    setCustomSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAllCustom = () => {
+    setCustomSelectedIds(sessions.map(s => s.id));
+  };
+
+  const handleDeselectAllCustom = () => {
+    setCustomSelectedIds([]);
+  };
+
   // Filtra e prepara le sessioni per l'esportazione (SEMPRE CON ARROTONDAMENTO APPLICATO)
   const exportSessions = useMemo(() => {
+    if (exportType === 'custom') {
+      return sessions
+        .filter(s => customSelectedIds.includes(s.id))
+        .sort((a, b) => a.date.localeCompare(b.date));
+    }
+
     if (!exportPeriod) return [];
     
     if (exportType === 'month') {
@@ -241,7 +279,7 @@ export default function Analysis({ sessions, hourlyRate }) {
         })
         .sort((a, b) => a.date.localeCompare(b.date));
     }
-  }, [sessions, exportType, exportPeriod]);
+  }, [sessions, exportType, exportPeriod, customSelectedIds]);
 
   // Calcola i totali per l'esportazione (CON ARROTONDAMENTO)
   const exportTotals = useMemo(() => {
@@ -426,34 +464,121 @@ export default function Analysis({ sessions, hourlyRate }) {
             >
               <option value="month">Mensile</option>
               <option value="week">Settimanale</option>
+              <option value="custom">Personalizzato (Custom)</option>
             </select>
           </div>
           
           <div className="form-group" style={{ flex: 1, marginBottom: '0' }}>
             <label>Seleziona Data</label>
-            <select 
-              value={exportPeriod} 
-              onChange={(e) => setExportPeriod(e.target.value)}
-              style={{ borderRadius: '8px', padding: '10px' }}
-            >
-              {exportType === 'month' ? (
-                uniqueMonths.map(ym => (
-                  <option key={ym} value={ym}>{formattedMonthLabel(ym)}</option>
-                ))
+            {exportType === 'custom' ? (
+              <select disabled style={{ borderRadius: '8px', padding: '10px', opacity: 0.6, cursor: 'not-allowed' }}>
+                <option>Selezione Libera (Sotto)</option>
+              </select>
+            ) : (
+              <select 
+                value={exportPeriod} 
+                onChange={(e) => setExportPeriod(e.target.value)}
+                style={{ borderRadius: '8px', padding: '10px' }}
+              >
+                {exportType === 'month' ? (
+                  uniqueMonths.map(ym => (
+                    <option key={ym} value={ym}>{formattedMonthLabel(ym)}</option>
+                  ))
+                ) : (
+                  uniqueWeeks.map(w => {
+                    const mon = new Date(w);
+                    const sun = new Date(mon);
+                    sun.setDate(mon.getDate() + 6);
+                    const fDay = (d) => `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')}`;
+                    return (
+                      <option key={w} value={w}>Settimana {fDay(mon)} - {fDay(sun)}</option>
+                    );
+                  })
+                )}
+              </select>
+            )}
+          </div>
+        </div>
+
+        {exportType === 'custom' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '14px', marginTop: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <span style={{ fontSize: '12.5px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                Seleziona Sessioni ({customSelectedIds.length}/{sessions.length})
+              </span>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  type="button"
+                  style={{ background: 'none', border: 'none', color: 'var(--color-brand)', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', padding: '0' }}
+                  onClick={handleSelectAllCustom}
+                >
+                  Seleziona Tutte
+                </button>
+                <span style={{ color: 'var(--border-color)', fontSize: '11px' }}>|</span>
+                <button 
+                  type="button"
+                  style={{ background: 'none', border: 'none', color: 'var(--color-brand)', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', padding: '0' }}
+                  onClick={handleDeselectAllCustom}
+                >
+                  Deseleziona Tutte
+                </button>
+              </div>
+            </div>
+            
+            <div className="custom-sessions-list" style={{ 
+              maxHeight: '180px', 
+              overflowY: 'auto', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '6px',
+              paddingRight: '4px'
+            }}>
+              {sessions.length === 0 ? (
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px 0' }}>
+                  Nessuna sessione registrata.
+                </div>
               ) : (
-                uniqueWeeks.map(w => {
-                  const mon = new Date(w);
-                  const sun = new Date(mon);
-                  sun.setDate(mon.getDate() + 6);
-                  const fDay = (d) => `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')}`;
+                sessions.map(s => {
+                  const isChecked = customSelectedIds.includes(s.id);
+                  const rHours = roundHours(Number(s.duration_hours));
                   return (
-                    <option key={w} value={w}>Settimana {fDay(mon)} - {fDay(sun)}</option>
+                    <label 
+                      key={s.id} 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        fontSize: '12px', 
+                        cursor: 'pointer', 
+                        padding: '6px 8px', 
+                        borderRadius: '6px', 
+                        background: isChecked ? 'var(--bg-secondary)' : 'var(--bg-tertiary)',
+                        border: isChecked ? '1px solid var(--color-brand)' : '1px solid transparent',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <input 
+                        type="checkbox" 
+                        checked={isChecked} 
+                        onChange={() => handleToggleCustomSession(s.id)}
+                        style={{ cursor: 'pointer', accentColor: 'var(--color-brand)' }}
+                      />
+                      <span style={{ fontWeight: 'bold', minWidth: '75px', color: 'var(--text-primary)' }}>
+                        {new Date(s.date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                      </span>
+                      <span style={{ flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', fontStyle: 'italic', color: 'var(--text-secondary)' }}>
+                        {s.notes || 'Lavoro ordinario'}
+                      </span>
+                      <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                        {rHours.toFixed(1)}h ({s.start_time.substring(0, 5)} - {getRoundedEndTime(s.start_time, rHours)})
+                      </span>
+                    </label>
                   );
                 })
               )}
-            </select>
+            </div>
           </div>
-        </div>
+        )}
 
         {exportSessions.length > 0 ? (
           <div className="export-panel" style={{ border: 'none', paddingTop: '0', marginTop: '8px' }}>
