@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Calendar, DollarSign, ChevronLeft, ChevronRight, TrendingUp, Printer } from 'lucide-react';
-import { roundHours, getRoundedEarnings, formatHoursAndMinutes } from '../utils/rounding';
+import { roundHours, getRoundedEarnings, formatHoursAndMinutes, getRoundedEndTime } from '../utils/rounding';
+
 
 const MONTHS_IT = [
   'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -474,8 +475,18 @@ export default function Analysis({ sessions, hourlyRate }) {
                       <tr key={s.id} style={{ borderBottom: '1px solid var(--bg-tertiary)' }}>
                         <td style={{ padding: '10px 4px' }}>{new Date(s.date).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: '2-digit' })}</td>
                         <td style={{ padding: '10px 4px', fontStyle: 'italic', color: 'var(--text-secondary)' }}>{s.notes || 'Lavoro ordinario'}</td>
-                        <td style={{ padding: '10px 4px', textAlign: 'right' }}>{Number(s.duration_hours).toFixed(2)}h</td>
-                        <td style={{ padding: '10px 4px', textAlign: 'right', fontWeight: 'bold' }}>{rHours.toFixed(1)}h</td>
+                        <td style={{ padding: '10px 4px', textAlign: 'right' }}>
+                          <div>{Number(s.duration_hours).toFixed(2)}h</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                            {s.start_time.substring(0, 5)} - {s.end_time.substring(0, 5)}
+                          </div>
+                        </td>
+                        <td style={{ padding: '10px 4px', textAlign: 'right', fontWeight: 'bold' }}>
+                          <div>{rHours.toFixed(1)}h</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 'normal', marginTop: '2px' }}>
+                            {s.start_time.substring(0, 5)} - {getRoundedEndTime(s.start_time, rHours)}
+                          </div>
+                        </td>
                       </tr>
                     );
                   })}
@@ -519,8 +530,18 @@ export default function Analysis({ sessions, hourlyRate }) {
                 <tr key={s.id}>
                   <td style={{ border: '1px solid #dddddd', padding: '8px' }}>{new Date(s.date).toLocaleDateString('it-IT')}</td>
                   <td style={{ border: '1px solid #dddddd', padding: '8px', fontStyle: 'italic' }}>{s.notes || 'Attività lavorativa ordinaria'}</td>
-                  <td style={{ border: '1px solid #dddddd', padding: '8px', textAlign: 'right' }}>{Number(s.duration_hours).toFixed(2)} h</td>
-                  <td style={{ border: '1px solid #dddddd', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>{rHours.toFixed(1)} h</td>
+                  <td style={{ border: '1px solid #dddddd', padding: '8px', textAlign: 'right' }}>
+                    <div>{Number(s.duration_hours).toFixed(2)} h</div>
+                    <div style={{ fontSize: '9pt', color: '#555555', marginTop: '2px' }}>
+                      {s.start_time.substring(0, 5)} - {s.end_time.substring(0, 5)}
+                    </div>
+                  </td>
+                  <td style={{ border: '1px solid #dddddd', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>
+                    <div>{rHours.toFixed(1)} h</div>
+                    <div style={{ fontSize: '9pt', color: '#555555', fontWeight: 'normal', marginTop: '2px' }}>
+                      {s.start_time.substring(0, 5)} - {getRoundedEndTime(s.start_time, rHours)}
+                    </div>
+                  </td>
                 </tr>
               );
             })}

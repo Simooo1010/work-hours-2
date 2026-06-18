@@ -41,3 +41,35 @@ export const formatHoursAndMinutes = (hoursDecimal) => {
   if (mins === 0) return `${hrs}h`;
   return `${hrs}h ${mins}m`;
 };
+
+/**
+ * Calcola l'orario di fine arrotondato in base alla durata arrotondata
+ * ed all'orario di inizio fornito.
+ * 
+ * @param {string} startTime - Orario di inizio nel formato "HH:MM" o "HH:MM:SS"
+ * @param {number} roundedHours - Ore arrotondate
+ * @returns {string} Orario di fine arrotondato nel formato "HH:MM"
+ */
+export const getRoundedEndTime = (startTime, roundedHours) => {
+  if (!startTime) return '';
+  
+  // Rimuovi i secondi se presenti e prendi ore/minuti
+  const parts = startTime.split(':');
+  const startH = parseInt(parts[0], 10) || 0;
+  const startM = parseInt(parts[1], 10) || 0;
+  
+  const startMin = startH * 60 + startM;
+  const roundedMin = Math.round(roundedHours * 60);
+  
+  let endMin = startMin + roundedMin;
+  
+  // Gestiamo il superamento delle 24 ore
+  endMin = endMin % (24 * 60);
+  
+  const endH = Math.floor(endMin / 60);
+  const endM = endMin % 60;
+  
+  const pad = (num) => String(num).padStart(2, '0');
+  return `${pad(endH)}:${pad(endM)}`;
+};
+
