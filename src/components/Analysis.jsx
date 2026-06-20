@@ -302,7 +302,7 @@ export default function Analysis({ sessions, hourlyRate }) {
   };
 
   return (
-    <div className="view-content">
+    <div className="view-content analysis-grid">
       {/* SELETTORE LIVELLO ARROTONDAMENTO */}
       <div className="toggle-container">
         <button 

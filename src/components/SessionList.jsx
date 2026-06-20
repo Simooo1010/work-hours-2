@@ -142,7 +142,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
   };
 
   return (
-    <div className="view-content">
+    <div className="view-content session-grid">
       {/* 1. AGGIUNGI SESSIONE MANUALE */}
       <div className="card">
         <div className="card-title">

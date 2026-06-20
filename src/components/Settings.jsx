@@ -40,7 +40,7 @@ export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
   };
 
   return (
-    <div className="view-content">
+    <div className="view-content settings-grid">
       {/* 1. IMPOSTAZIONE TARIFFA ORARIA */}
       <div className="card">
         <div className="card-title">

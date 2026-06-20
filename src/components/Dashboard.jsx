@@ -35,7 +35,7 @@ export default function Dashboard({ sessions, hourlyRate, activeTimer, setActive
   };
 
   return (
-    <div className="view-content">
+    <div className="view-content dashboard-grid">
       {/* 1. SEZIONE TOTALI STORICI (Arrotondati) */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div className="card-title" style={{ marginBottom: '4px' }}>
