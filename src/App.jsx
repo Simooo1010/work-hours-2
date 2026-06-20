@@ -335,69 +335,89 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {/* Intestazione fissa dell'app */}
-      <header className="header">
-        <h1>Work Tracker</h1>
-        {supabase.isMock ? (
-          <span className="badge badge-demo">Demo Locale</span>
-        ) : (
-          <span className="badge badge-connected">Cloud Attivo</span>
-        )}
-      </header>
+      {/* Sidebar for Desktop */}
+      <aside className="sidebar">
+        <div className="sidebar-brand">
+          <div className="brand-icon"><LayoutDashboard size={20} /></div>
+          <h2>Work Tracker</h2>
+        </div>
+        <nav className="sidebar-nav">
+          <button className={`sidebar-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
+            <LayoutDashboard size={20} />
+            <span>Dashboard</span>
+          </button>
+          <button className={`sidebar-item ${activeView === 'analysis' ? 'active' : ''}`} onClick={() => setActiveView('analysis')}>
+            <BarChart2 size={20} />
+            <span>Analisi</span>
+          </button>
+          <button className={`sidebar-item ${activeView === 'sessions' ? 'active' : ''}`} onClick={() => setActiveView('sessions')}>
+            <Calendar size={20} />
+            <span>Sessioni</span>
+          </button>
+          <button className={`sidebar-item ${activeView === 'settings' ? 'active' : ''}`} onClick={() => setActiveView('settings')}>
+            <SettingsIcon size={20} />
+            <span>Impostazioni</span>
+          </button>
+        </nav>
+        <div className="sidebar-footer">
+          {supabase.isMock ? (
+            <span className="badge badge-demo" style={{ width: '100%', justifyContent: 'center' }}>Demo Locale</span>
+          ) : (
+            <span className="badge badge-connected" style={{ width: '100%', justifyContent: 'center' }}>Cloud Attivo</span>
+          )}
+        </div>
+      </aside>
 
-      {/* Banner fluttuante se c'è un timer attivo in background (non nella vista dashboard) */}
-      {activeTimer && activeView !== 'dashboard' && (
-        <div style={{ padding: '16px 20px 0 20px' }}>
-          <div className="mini-timer-banner" onClick={() => setActiveView('dashboard')}>
-            <div className="mini-timer-info">
-              <div className="mini-timer-pulse"></div>
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>Sessione in corso</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Note: {activeTimer.notes || 'Nessuna'}</div>
+      <div className="main-content">
+        {/* Intestazione fissa dell'app (Mobile) */}
+        <header className="header mobile-header">
+          <h1>Work Tracker</h1>
+          {supabase.isMock ? (
+            <span className="badge badge-demo">Demo Locale</span>
+          ) : (
+            <span className="badge badge-connected">Cloud Attivo</span>
+          )}
+        </header>
+
+        {/* Banner fluttuante se c'è un timer attivo in background (non nella vista dashboard) */}
+        {activeTimer && activeView !== 'dashboard' && (
+          <div style={{ padding: '16px 20px 0 20px' }}>
+            <div className="mini-timer-banner" onClick={() => setActiveView('dashboard')}>
+              <div className="mini-timer-info">
+                <div className="mini-timer-pulse"></div>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>Sessione in corso</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Note: {activeTimer.notes || 'Nessuna'}</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', fontSize: '18px', color: 'var(--color-brand)' }}>
+                  {formatMiniElapsed(miniElapsedMs)}
+                </span>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', fontSize: '18px', color: 'var(--color-brand)' }}>
-                {formatMiniElapsed(miniElapsedMs)}
-              </span>
-            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Contenuto della vista corrente */}
-      {renderView()}
+        {/* Contenuto della vista corrente */}
+        {renderView()}
+      </div>
 
       {/* Nav Bar Fissa in Basso per Mobile */}
-      <nav className="nav-bar">
-        <button
-          className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`}
-          onClick={() => setActiveView('dashboard')}
-        >
+      <nav className="nav-bar mobile-nav">
+        <button className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
           <LayoutDashboard />
           <span>Dashboard</span>
         </button>
-
-        <button
-          className={`nav-item ${activeView === 'analysis' ? 'active' : ''}`}
-          onClick={() => setActiveView('analysis')}
-        >
+        <button className={`nav-item ${activeView === 'analysis' ? 'active' : ''}`} onClick={() => setActiveView('analysis')}>
           <BarChart2 />
           <span>Analisi</span>
         </button>
-
-        <button
-          className={`nav-item ${activeView === 'sessions' ? 'active' : ''}`}
-          onClick={() => setActiveView('sessions')}
-        >
+        <button className={`nav-item ${activeView === 'sessions' ? 'active' : ''}`} onClick={() => setActiveView('sessions')}>
           <Calendar />
           <span>Sessioni</span>
         </button>
-
-        <button
-          className={`nav-item ${activeView === 'settings' ? 'active' : ''}`}
-          onClick={() => setActiveView('settings')}
-        >
+        <button className={`nav-item ${activeView === 'settings' ? 'active' : ''}`} onClick={() => setActiveView('settings')}>
           <SettingsIcon />
           <span>Impostazioni</span>
         </button>
