@@ -76,7 +76,7 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.01em;
 }
 
-/* App Layout */
+/* App Layout - Full screen on all devices like a normal website */
 .app-container {
   width: 100%;
   max-width: 100%;
@@ -87,63 +87,48 @@ h1, h2, h3, h4, h5, h6 {
   background-color: var(--bg-primary);
   position: relative;
   padding-bottom: 104px; /* Space for bottom floating navigation bar */
-  transition: max-width var(--transition-normal);
 }
 
+/* --- TABLET (768px+) --- */
 @media (min-width: 768px) {
   .app-container {
-    max-width: 1000px;
     padding-bottom: 116px;
   }
 
-  /* Dashboard Desktop Grid */
+  .view-content {
+    padding: 28px 32px;
+    gap: 24px;
+  }
+
+  .header {
+    padding: 20px 32px 16px 32px;
+  }
+
+  /* Dashboard 2-column grid */
   .dashboard-grid {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     gap: 24px;
     align-items: start;
   }
-  .dashboard-grid > :nth-child(1) { /* Riepilogo Totale */
-    grid-column: 1;
-    grid-row: 1;
-  }
-  .dashboard-grid > :nth-child(2) { /* TimerWidget (Active Tracking) */
-    grid-column: 2;
-    grid-row: 1 / span 2;
-  }
-  .dashboard-grid > :nth-child(3) { /* Sessioni di Oggi */
-    grid-column: 1;
-    grid-row: 2;
-  }
+  .dashboard-grid > :nth-child(1) { grid-column: 1; grid-row: 1; }
+  .dashboard-grid > :nth-child(2) { grid-column: 2; grid-row: 1 / span 2; }
+  .dashboard-grid > :nth-child(3) { grid-column: 1; grid-row: 2; }
 
-  /* Analysis Desktop Grid */
+  /* Analysis 2-column grid */
   .analysis-grid {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     gap: 24px;
     align-items: start;
   }
-  .analysis-grid > .toggle-container {
-    grid-column: 1 / -1;
-  }
-  .analysis-grid > :nth-child(2) { /* Totale Periodo */
-    grid-column: 1;
-    grid-row: 2;
-  }
-  .analysis-grid > :nth-child(3) { /* Rendimento Settimanale */
-    grid-column: 2;
-    grid-row: 2 / span 2;
-  }
-  .analysis-grid > :nth-child(4) { /* Statistiche Mensili */
-    grid-column: 1;
-    grid-row: 3;
-  }
-  .analysis-grid > :nth-child(5) { /* Esportazione Ore */
-    grid-column: 1 / -1;
-    grid-row: 4;
-  }
+  .analysis-grid > .toggle-container { grid-column: 1 / -1; }
+  .analysis-grid > :nth-child(2) { grid-column: 1; grid-row: 2; }
+  .analysis-grid > :nth-child(3) { grid-column: 2; grid-row: 2 / span 2; }
+  .analysis-grid > :nth-child(4) { grid-column: 1; grid-row: 3; }
+  .analysis-grid > :nth-child(5) { grid-column: 1 / -1; grid-row: 4; }
 
-  /* Session List Desktop Grid */
+  /* Session List 2-column */
   .session-grid {
     display: grid;
     grid-template-columns: 1fr 1.2fr;
@@ -151,25 +136,67 @@ h1, h2, h3, h4, h5, h6 {
     align-items: start;
   }
 
-  /* Settings Desktop Grid */
+  /* Settings 2-column */
   .settings-grid {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     gap: 24px;
     align-items: start;
   }
-  .settings-grid > :nth-child(1) { /* Tariffa Oraria */
-    grid-column: 1;
-    grid-row: 1;
+  .settings-grid > :nth-child(1) { grid-column: 1; grid-row: 1; }
+  .settings-grid > :nth-child(2) { grid-column: 2; grid-row: 1 / span 2; }
+  .settings-grid > :nth-child(3) { grid-column: 1; grid-row: 2; }
+}
+
+/* --- DESKTOP (1200px+) --- */
+@media (min-width: 1200px) {
+  .app-container {
+    padding-bottom: 120px;
   }
-  .settings-grid > :nth-child(2) { /* Stato Connessione */
-    grid-column: 2;
-    grid-row: 1 / span 2;
+
+  .view-content {
+    padding: 32px 48px;
+    gap: 28px;
   }
-  .settings-grid > :nth-child(3) { /* Profilo Utente E Logout */
-    grid-column: 1;
-    grid-row: 2;
+
+  .header {
+    padding: 20px 48px 16px 48px;
   }
+
+  /* Dashboard 3-column grid on large screens */
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 28px;
+  }
+  .dashboard-grid > :nth-child(1) { grid-column: 1 / span 2; grid-row: 1; }
+  .dashboard-grid > :nth-child(2) { grid-column: 3; grid-row: 1 / span 2; }
+  .dashboard-grid > :nth-child(3) { grid-column: 1 / span 2; grid-row: 2; }
+
+  /* Analysis 3-column grid on large screens */
+  .analysis-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 28px;
+  }
+  .analysis-grid > .toggle-container { grid-column: 1 / -1; grid-row: 1; }
+  .analysis-grid > :nth-child(2) { grid-column: 1; grid-row: 2; }
+  .analysis-grid > :nth-child(3) { grid-column: 2 / span 2; grid-row: 2 / span 2; }
+  .analysis-grid > :nth-child(4) { grid-column: 1; grid-row: 3; }
+  .analysis-grid > :nth-child(5) { grid-column: 1 / -1; grid-row: 4; }
+
+  /* Session List 3-column on large screens */
+  .session-grid {
+    grid-template-columns: 1fr 2fr;
+    gap: 28px;
+  }
+
+  /* Settings 3-column on large screens */
+  .settings-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 28px;
+  }
+  .settings-grid > :nth-child(1) { grid-column: 1; grid-row: 1; }
+  .settings-grid > :nth-child(2) { grid-column: 2 / span 2; grid-row: 1 / span 2; }
+  .settings-grid > :nth-child(3) { grid-column: 1; grid-row: 2; }
 }
 
 /* Nav Bar (Bottom Floating Pill for Modern Aesthetics) */
