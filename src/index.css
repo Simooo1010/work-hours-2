@@ -1123,26 +1123,35 @@ input:focus, select:focus, textarea:focus {
     font-family: 'Times New Roman', serif;
   }
   
-  .app-container {
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    padding-bottom: 0 !important;
-  }
-  
   /* Hide interactive layouts and other elements not meant for print */
+  .sidebar,
   .header,
   .nav-bar,
   .mini-timer-banner,
-  .view-content > *:not(.print-document),
-  .modal-overlay {
+  .modal-overlay,
+  .view-content > *:not(.print-document) {
     display: none !important;
+  }
+  
+  /* Reset grid/flex layouts for print compatibility */
+  html, body, #root, .app-container, .main-content, .view-content {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
   }
   
   /* Printable invoice structure */
   .print-document {
     display: block !important;
-    width: 100%;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
   
   .print-header {
