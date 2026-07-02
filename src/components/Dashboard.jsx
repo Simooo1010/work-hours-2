@@ -1,7 +1,30 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { PixelTrend, PixelClock, PixelMoney, PixelHistory } from './PixelIcons';
 import TimerWidget from './TimerWidget';
 import { roundHours, getRoundedEarnings, formatHoursAndMinutes } from '../utils/rounding';
+
+// CardDecor helper component to draw grass/flowers on top of card edges
+export const CardDecor = () => {
+  const [decor, setDecor] = useState(null);
+  useEffect(() => {
+    const items = ['grass', 'flower', 'none'];
+    const selected = items[Math.floor(Math.random() * items.length)];
+    if (selected !== 'none') {
+      setDecor({
+        type: selected,
+        left: `${10 + Math.random() * 80}%`
+      });
+    }
+  }, []);
+
+  if (!decor) return null;
+  return (
+    <div 
+      className={`pixel-decor-card pixel-${decor.type}`}
+      style={{ left: decor.left }}
+    />
+  );
+};
 
 export default function Dashboard({ sessions, hourlyRate, activeTimer, setActiveTimer, onSaveSession }) {
   
@@ -37,7 +60,8 @@ export default function Dashboard({ sessions, hourlyRate, activeTimer, setActive
   return (
     <div className="view-content dashboard-grid">
       {/* 1. SEZIONE TOTALI STORICI (Arrotondati) */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px', position: 'relative' }}>
+        <CardDecor />
         <div className="card-title" style={{ marginBottom: '4px' }}>
           <PixelTrend size={18} color="var(--color-brand)" />
           <span>Riepilogo Totale (Arrotondato)</span>
@@ -66,7 +90,8 @@ export default function Dashboard({ sessions, hourlyRate, activeTimer, setActive
       />
 
       {/* 3. LISTA DELLE SESSIONI DI OGGI */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative' }}>
+        <CardDecor />
         <div className="card-title" style={{ marginBottom: '4px' }}>
           <PixelHistory size={18} color="var(--color-brand)" />
           <span>Sessioni di Oggi ({formatDateIt(todayStr)})</span>

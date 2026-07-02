@@ -1,5 +1,6 @@
 import { PixelHistory, PixelMoney, PixelChevronLeft, PixelChevronRight, PixelTrend, PixelPrint } from './PixelIcons';
 import React, { useState, useMemo } from 'react';
+import { CardDecor } from './Dashboard';
 
 import { roundHours, getRoundedEarnings, formatHoursAndMinutes, getRoundedEndTime } from '../utils/rounding';
 
@@ -321,7 +322,8 @@ export default function Analysis({ sessions, hourlyRate }) {
       </div>
 
       {/* 1. SEZIONE TOTALI STORICI */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px', position: 'relative' }}>
+        <CardDecor />
         <div className="card-title" style={{ marginBottom: '4px' }}>
           <PixelTrend size={18} color={roundingApplied ? 'var(--color-brand)' : 'var(--color-accent)'} />
           <span>Totale Periodo ({roundingApplied ? 'Arrotondato' : 'Reale'})</span>
@@ -341,7 +343,8 @@ export default function Analysis({ sessions, hourlyRate }) {
       </div>
 
       {/* 2. REPORT SETTIMANALE CON GRAFICO */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative' }}>
+        <CardDecor />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div className="card-title" style={{ marginBottom: '0' }}>
             <PixelHistory size={18} color={roundingApplied ? 'var(--color-brand)' : 'var(--color-accent)'} />
@@ -414,7 +417,8 @@ export default function Analysis({ sessions, hourlyRate }) {
       </div>
 
       {/* 3. REPORT MENSILE CON TABS */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative' }}>
+        <CardDecor />
         <div className="card-title">
           <PixelHistory size={18} color={roundingApplied ? 'var(--color-brand)' : 'var(--color-accent)'} />
           <span>Statistiche Mensili</span>
@@ -449,7 +453,8 @@ export default function Analysis({ sessions, hourlyRate }) {
       </div>
 
       {/* 4. ESPORTAZIONE TABELLA E TOTALI ORE/GUADAGNO */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative' }}>
+        <CardDecor />
         <div className="card-title">
           <PixelPrint size={18} color="var(--color-brand)" />
           <span>Esportazione Ore (Arrotondate)</span>

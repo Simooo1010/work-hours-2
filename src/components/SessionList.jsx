@@ -1,5 +1,6 @@
 import { PixelPlus, PixelTrash, PixelEdit, PixelHistory, PixelClock, PixelFile, PixelX, PixelAlert } from './PixelIcons';
 import React, { useState } from 'react';
+import { CardDecor } from './Dashboard';
 
 import { roundHours, getRoundedEarnings } from '../utils/rounding';
 
@@ -145,7 +146,8 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
   return (
     <div className="view-content session-grid">
       {/* 1. AGGIUNGI SESSIONE MANUALE */}
-      <div className="card">
+      <div className="card" style={{ position: 'relative' }}>
+        <CardDecor />
         <div className="card-title">
           <PixelPlus size={18} color="var(--color-brand)" />
           <span>Aggiungi Sessione Manualmente</span>
@@ -225,7 +227,8 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
       </div>
 
       {/* 2. ELENCO DELLE SESSIONI REGISTRATE */}
-      <div className="card">
+      <div className="card" style={{ position: 'relative' }}>
+        <CardDecor />
         <div className="card-title">
           <PixelHistory size={18} color="var(--color-brand)" />
           <span>Sessioni Registrate</span>

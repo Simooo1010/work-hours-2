@@ -11,16 +11,20 @@
   --text-secondary: #333333;        /* Dark grey */
   --text-muted: #666666;            /* Soft border/outline grey */
   
-  --color-brand: #39FF14;           /* Fluo Neon Green primary */
-  --color-brand-hover: #32d611;
-  --color-brand-light: #e7ffd9;
-  --color-brand-glow: rgba(57, 255, 20, 0.4);
+  --color-brand: #009922;           /* Rich Retro Green for light mode readability */
+  --color-brand-hover: #00771a;
+  --color-brand-light: #e0fbe0;
+  --color-brand-glow: rgba(0, 153, 34, 0.4);
   
-  --color-azure: #00BFFF;           /* Azzurro per light mode */
-  --color-purple: #9D00FF;          /* Viola per light mode */
-  --color-yellow: #FFFF00;          /* Giallo per light mode */
+  --color-azure: #008ae6;           /* Azzurro per light mode */
+  --color-azure-hover: #006bb3;
+  --color-azure-light: #e0f2ff;
+  --color-azure-glow: rgba(0, 138, 230, 0.3);
   
-  --color-success: #39FF14;         
+  --color-purple: #8a00e6;          /* Viola per light mode */
+  --color-yellow: #d4af37;          /* Giallo per light mode */
+  
+  --color-success: #009922;         
   
   --color-accent: #FF5E00;          /* Fluo Orange/Red */
   --color-accent-hover: #e65500;
@@ -319,11 +323,12 @@ input:focus, select:focus, textarea:focus {
 
 .btn-primary {
   background: var(--color-brand);
-  color: #fff;
+  color: #000000 !important;
 }
 
 .btn-primary:hover {
   background: var(--color-brand-hover);
+  color: #000000 !important;
 }
 
 .btn-primary:active {
@@ -332,11 +337,12 @@ input:focus, select:focus, textarea:focus {
 
 .btn-success {
   background: var(--color-brand);
-  color: #fff;
+  color: #000000 !important;
 }
 
 .btn-success:hover {
   background: var(--color-brand-hover);
+  color: #000000 !important;
 }
 
 .btn-success:active {
@@ -856,14 +862,15 @@ input:focus, select:focus, textarea:focus {
   bottom: 0;
   left: 0;
   width: 100%;
-  background: white;
-  border-top: 3px solid #000;
+  background: var(--bg-secondary);
+  border-top: 3px solid var(--border-color);
   display: flex;
   justify-content: space-around;
   align-items: center;
   padding: 8px 12px;
   z-index: 100;
   box-shadow: none;
+  transform: none !important;
 }
 
 .nav-item {
@@ -888,10 +895,10 @@ input:focus, select:focus, textarea:focus {
 }
 
 .nav-item.active {
-  background: var(--primary-container);
-  border: 2px solid #000;
-  box-shadow: 2px 2px 0px #000;
-  color: #000;
+  background: var(--color-brand);
+  border: 2px solid var(--border-color);
+  box-shadow: 2px 2px 0px var(--border-color);
+  color: var(--bg-primary) !important;
 }
 
 .login-card {
@@ -1369,7 +1376,7 @@ input:focus, select:focus, textarea:focus {
     --bg-tertiary-hover: #000040;
     
     --text-primary: #39FF14;          /* Neon Green text (retro terminal feel) */
-    --text-secondary: #00FFCC;        /* Cyan for secondary text */
+    --text-secondary: #00e5ff;        /* Neon Azure for secondary text */
     --text-muted: #8e958f;            /* Outline grey */
     
     --color-brand: #39FF14;           /* Fluo Neon Green primary */
@@ -1377,7 +1384,11 @@ input:focus, select:focus, textarea:focus {
     --color-brand-light: #003300;
     --color-brand-glow: rgba(57, 255, 20, 0.4);
     
-    --color-azure: #0000FF;           /* Blu scuro/fluo per dark mode */
+    --color-azure: #00e5ff;           /* Fluo Neon Azure for dark mode */
+    --color-azure-hover: #00b8cc;
+    --color-azure-light: #002933;
+    --color-azure-glow: rgba(0, 229, 255, 0.4);
+    
     --color-purple: #B200FF;          /* Viola energico per dark mode */
     --color-yellow: #FFEA00;          /* Giallo per dark mode */
     
@@ -1390,14 +1401,14 @@ input:focus, select:focus, textarea:focus {
     --color-danger: #ff0044;
     --color-danger-hover: #cc0033;
     
-    --border-color: #00FFCC;          /* Neon cyan borders */
-    --border-highlight: #00FFCC;
+    --border-color: #00e5ff;          /* Neon cyan/azure borders */
+    --border-highlight: #39FF14;
     --glass-bg: rgba(0, 0, 32, 0.85);
-    --glass-border: #00FFCC;
+    --glass-border: #00e5ff;
     
-    --shadow-sm: 2px 2px 0px #00FFCC;
-    --shadow-md: 4px 4px 0px #00FFCC;
-    --shadow-lg: 8px 8px 0px #00FFCC;
+    --shadow-sm: 2px 2px 0px #00e5ff;
+    --shadow-md: 4px 4px 0px #00e5ff;
+    --shadow-lg: 8px 8px 0px #00e5ff;
   }
 
   .print-document-screen {
@@ -1493,28 +1504,60 @@ input:focus, select:focus, textarea:focus {
 }
 
 @keyframes drift-right {
-  0% { transform: translateX(-50px); }
-  100% { transform: translateX(100vw); }
+  0% { left: -100px; }
+  100% { left: 100%; }
 }
 
 @keyframes drift-left {
-  0% { transform: translateX(50px); }
-  100% { transform: translateX(-100vw); }
+  0% { left: 100%; }
+  100% { left: -100px; }
 }
 
 .anim-drift-right {
-  animation: drift-right 40s linear infinite;
+  animation: drift-right 45s linear infinite;
 }
 
 .anim-drift-left {
-  animation: drift-left 35s linear infinite;
+  animation: drift-left 40s linear infinite;
 }
 
 /* Adjustments for the new retro style */
 body {
   background-image: 
-    linear-gradient(#f0f0f0 1px, transparent 1px),
-    linear-gradient(90deg, #f0f0f0 1px, transparent 1px);
+    linear-gradient(rgba(115, 120, 116, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(115, 120, 116, 0.08) 1px, transparent 1px);
   background-size: 20px 20px;
   background-color: var(--bg-primary);
+}
+
+/* Card decor items sitting on top edges */
+.pixel-decor-card {
+  position: absolute;
+  top: -12px;
+  width: 16px;
+  height: 16px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.pixel-decor-card.pixel-grass {
+  width: 24px;
+  height: 16px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="%2339FF14" d="M2 10h2v4H2zm4-4h2v8H6zm6 2h2v6h-2z"/></svg>');
+}
+
+.pixel-decor-card.pixel-flower {
+  width: 16px;
+  height: 16px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect x="7" y="10" width="2" height="6" fill="%2339FF14"/><rect x="5" y="6" width="6" height="4" fill="%23FF00FF"/><rect x="7" y="4" width="2" height="2" fill="%23FF00FF"/><rect x="7" y="7" width="2" height="2" fill="%23FFEA00"/></svg>');
+}
+
+/* Stack form rows on small mobile devices to prevent overflow */
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
 }

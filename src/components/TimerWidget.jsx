@@ -1,5 +1,6 @@
 import { PixelPlay, PixelPause, PixelStop, PixelEdit, PixelClock, PixelMoney, PixelCheck, PixelAlert } from './PixelIcons';
 import React, { useState, useEffect } from 'react';
+import { CardDecor } from './Dashboard';
 
 
 export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer }) {
@@ -196,7 +197,8 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
   const estimatedEarnings = (Math.max(0, elapsedMs) / (1000 * 60 * 60)) * hourlyRate;
 
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px', position: 'relative' }}>
+      <CardDecor />
       <div className="card-title">
         <PixelClock size={18} color="var(--color-brand)" />
         <span>Tracciamento in Tempo Reale</span>

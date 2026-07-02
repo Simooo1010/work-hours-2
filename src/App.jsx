@@ -36,8 +36,8 @@ export default function App() {
 
   useEffect(() => {
     const decors = [];
-    const types = ['pixel-cloud', 'pixel-cloud', 'pixel-bird', 'pixel-flower', 'pixel-grass', 'pixel-grass', 'pixel-cat'];
-    const numDecors = 10 + Math.floor(Math.random() * 10);
+    const types = ['pixel-cloud', 'pixel-cloud', 'pixel-bird', 'pixel-cat'];
+    const numDecors = 6 + Math.floor(Math.random() * 6);
     for (let i = 0; i < numDecors; i++) {
       const type = types[Math.floor(Math.random() * types.length)];
       let animClass = '';
@@ -48,11 +48,11 @@ export default function App() {
         id: i,
         type: type,
         animClass: animClass,
-        top: `${Math.floor(Math.random() * 90)}%`,
+        top: `${Math.floor(Math.random() * 80)}%`,
         left: animClass ? '-10%' : `${Math.floor(Math.random() * 90)}%`,
-        scale: 0.5 + Math.random(),
-        opacity: 0.6 + Math.random() * 0.4,
-        animDelay: `-${Math.floor(Math.random() * 40)}s`
+        scale: 0.5 + Math.random() * 0.8,
+        opacity: 0.5 + Math.random() * 0.4,
+        animDelay: `-${Math.floor(Math.random() * 45)}s`
       });
     }
     setDecorations(decors);
@@ -137,7 +137,7 @@ export default function App() {
         if (profileError) {
           console.error('Errore caricamento profilo:', profileError);
           // Se non esiste il profilo su Supabase (nuovo utente), lo creiamo
-          if (!supabase.isMock && profileError.message?.includes('rows') || profileError.code === 'PGRST116') {
+          if (profileError.message?.includes('rows') || profileError.code === 'PGRST116' || profileError.code === '42P01') {
             const { data: newProfile } = await supabase
               .from('profiles')
               .insert({ id: user.id, hourly_rate: 2.50 })
@@ -145,10 +145,16 @@ export default function App() {
               .single();
             if (newProfile) {
               setHourlyRate(Number(newProfile.hourly_rate));
+            } else {
+              setHourlyRate(2.50);
             }
+          } else {
+            setHourlyRate(2.50);
           }
         } else if (profile) {
-          setHourlyRate(Number(profile.hourly_rate));
+          setHourlyRate(Number(profile.hourly_rate) || 2.50);
+        } else {
+          setHourlyRate(2.50);
         }
 
         // 2. Carica tutte le sessioni lavorative dell'utente
@@ -448,19 +454,19 @@ export default function App() {
       {/* Nav Bar Fissa in Basso per Mobile */}
       <nav className="nav-bar mobile-nav">
         <button className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
-          <PixelTracker size={24} color={activeView === 'dashboard' ? '#000' : 'var(--text-primary)'} />
+          <PixelTracker size={24} color={activeView === 'dashboard' ? 'var(--bg-primary)' : 'var(--text-primary)'} />
           <span>TRACKER</span>
         </button>
         <button className={`nav-item ${activeView === 'analysis' ? 'active' : ''}`} onClick={() => setActiveView('analysis')}>
-          <PixelAnalysis size={24} color={activeView === 'analysis' ? '#000' : 'var(--text-primary)'} />
+          <PixelAnalysis size={24} color={activeView === 'analysis' ? 'var(--bg-primary)' : 'var(--text-primary)'} />
           <span>ANALYSIS</span>
         </button>
         <button className={`nav-item ${activeView === 'sessions' ? 'active' : ''}`} onClick={() => setActiveView('sessions')}>
-          <PixelHistory size={24} color={activeView === 'sessions' ? '#000' : 'var(--text-primary)'} />
+          <PixelHistory size={24} color={activeView === 'sessions' ? 'var(--bg-primary)' : 'var(--text-primary)'} />
           <span>HISTORY</span>
         </button>
         <button className={`nav-item ${activeView === 'settings' ? 'active' : ''}`} onClick={() => setActiveView('settings')}>
-          <PixelConfig size={24} color={activeView === 'settings' ? '#000' : 'var(--text-primary)'} />
+          <PixelConfig size={24} color={activeView === 'settings' ? 'var(--bg-primary)' : 'var(--text-primary)'} />
           <span>CONFIG</span>
         </button>
       </nav>

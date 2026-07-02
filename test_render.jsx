@@ -1,10 +1,24 @@
 import { renderToString } from 'react-dom/server';
 import React from 'react';
-import App from './src/App.jsx';
+
+global.localStorage = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {}
+};
+
+import Settings from './src/components/Settings.jsx';
 
 try {
-  const html = renderToString(<App />);
-  console.log("RENDER SUCCESS!");
+  const html = renderToString(
+    <Settings 
+      hourlyRate={null} 
+      onUpdateRate={() => {}} 
+      user={{ email: 'test@example.com' }} 
+      onLogout={() => {}} 
+    />
+  );
+  console.log("SETTINGS RENDER SUCCESS!");
 } catch (e) {
-  console.error("RENDER FAILED:", e);
+  console.error("SETTINGS RENDER FAILED:", e);
 }

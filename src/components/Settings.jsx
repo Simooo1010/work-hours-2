@@ -4,7 +4,10 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
-  const [rateInput, setRateInput] = useState(hourlyRate.toFixed(2));
+  const [rateInput, setRateInput] = useState(() => {
+    const rate = typeof hourlyRate === 'number' && !isNaN(hourlyRate) ? hourlyRate : 2.50;
+    return rate.toFixed(2);
+  });
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(false);
 
