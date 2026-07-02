@@ -8,6 +8,7 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
   const [isEditingStart, setIsEditingStart] = useState(false);
   const [editStartTimeVal, setEditStartTimeVal] = useState('');
   const [notes, setNotes] = useState('');
+  const [showDelayMenu, setShowDelayMenu] = useState(false);
 
   // Aggiorna il contatore del timer ogni secondo
   useEffect(() => {
@@ -209,31 +210,58 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
           <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>
             Nessuna sessione attiva al momento. Avvia il timer quando inizi a lavorare.
           </p>
-          <div style={{ display: 'flex', width: '100%', maxWidth: '300px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', width: '100%', maxWidth: '300px', margin: '0 auto', position: 'relative' }}>
             <button className="btn btn-success arcade-btn" onClick={() => handleStart(0)} style={{ flex: 1, padding: '16px', borderRight: 'none' }}>
-              <PixelPlay size={20} fill="white" />
+              <PixelPlay size={20} fill="#000" />
               Inizia Sessione
             </button>
-            <div style={{ position: 'relative', width: '56px' }}>
-              <button className="btn btn-success arcade-btn" style={{ width: '100%', height: '100%', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <PixelClock size={20} fill="white" />
-              </button>
-              <select 
-                style={{ opacity: 0, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: 'pointer' }}
-                onChange={(e) => {
-                  if(e.target.value) handleStart(Number(e.target.value));
-                  e.target.value = "";
-                }}
-                defaultValue=""
+            <div style={{ position: 'relative', width: '56px', flexShrink: 0 }}>
+              <button
+                className="btn btn-success arcade-btn"
+                style={{ width: '100%', height: '100%', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                onClick={() => setShowDelayMenu(v => !v)}
+                type="button"
               >
-                <option value="" disabled>Ritarda avvio...</option>
-                <option value="1">Tra 1 minuto</option>
-                <option value="5">Tra 5 minuti</option>
-                <option value="10">Tra 10 minuti</option>
-                <option value="15">Tra 15 minuti</option>
-                <option value="30">Tra 30 minuti</option>
-                <option value="60">Tra 1 ora</option>
-              </select>
+                <PixelClock size={20} fill="#000" />
+              </button>
+              {showDelayMenu && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  right: 0,
+                  background: 'var(--bg-secondary)',
+                  border: '3px solid var(--border-color)',
+                  boxShadow: 'var(--shadow-md)',
+                  zIndex: 200,
+                  minWidth: '160px',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  {[{label:'Tra 1 minuto', val:1},{label:'Tra 5 minuti', val:5},{label:'Tra 10 minuti', val:10},{label:'Tra 15 minuti', val:15},{label:'Tra 30 minuti', val:30},{label:'Tra 1 ora', val:60}].map(opt => (
+                    <button
+                      key={opt.val}
+                      type="button"
+                      onClick={() => { handleStart(opt.val); setShowDelayMenu(false); }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        borderBottom: '1px solid var(--border-color)',
+                        padding: '10px 14px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        color: 'var(--text-primary)',
+                        fontFamily: 'var(--font-heading)',
+                        fontSize: '18px',
+                        whiteSpace: 'nowrap'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--color-brand)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
