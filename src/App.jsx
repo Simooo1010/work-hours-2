@@ -1,11 +1,13 @@
+import { PixelTracker, PixelAnalysis, PixelHistory, PixelConfig, PixelAlert, PixelSparkle } from './components/PixelIcons';
 import React, { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
-import { LayoutDashboard, BarChart2, Calendar, Settings as SettingsIcon, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
+
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Analysis from './components/Analysis';
 import SessionList from './components/SessionList';
 import Settings from './components/Settings';
+import { PixelTracker, PixelAnalysis, PixelHistory, PixelConfig } from './components/PixelIcons';
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -30,6 +32,25 @@ export default function App() {
 
   // Stato per i secondi trascorsi nel banner mini-timer
   const [miniElapsedMs, setMiniElapsedMs] = useState(0);
+
+  const [decorations, setDecorations] = useState([]);
+
+  useEffect(() => {
+    const decors = [];
+    const types = ['pixel-cloud', 'pixel-cloud', 'pixel-bird', 'pixel-flower', 'pixel-grass'];
+    const numDecors = 8 + Math.floor(Math.random() * 8);
+    for (let i = 0; i < numDecors; i++) {
+      decors.push({
+        id: i,
+        type: types[Math.floor(Math.random() * types.length)],
+        top: `${Math.floor(Math.random() * 90)}%`,
+        left: `${Math.floor(Math.random() * 90)}%`,
+        scale: 0.5 + Math.random(),
+        opacity: 0.4 + Math.random() * 0.6
+      });
+    }
+    setDecorations(decors);
+  }, []);
 
   // Sincronizza activeTimer in localStorage
   useEffect(() => {
@@ -319,7 +340,7 @@ export default function App() {
   if (loading && user) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100dvh', gap: '16px', backgroundColor: 'var(--bg-primary)' }}>
-        <Loader2 size={32} className="animate-spin" style={{ color: 'var(--color-brand)' }} />
+        <PixelAlert size={32} style={{ color: 'var(--color-brand)' }} />
         <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: '500' }}>Caricamento dati...</span>
       </div>
     );
@@ -336,35 +357,41 @@ export default function App() {
   return (
     <div className="app-container">
       {/* Background Decor */}
-      <div className="pixel-decor pixel-cloud" style={{top: '10%', left: '5%'}}></div>
-      <div className="pixel-decor pixel-cloud" style={{top: '30%', right: '10%', transform: 'scale(0.8)'}}></div>
-      <div className="pixel-decor pixel-cloud" style={{top: '60%', left: '20%', transform: 'scale(1.2)', opacity: 0.5}}></div>
-      <div className="pixel-decor pixel-bird" style={{top: '15%', right: '25%'}}></div>
-      <div className="pixel-decor pixel-bird" style={{top: '25%', left: '35%', transform: 'scale(0.7)'}}></div>
-      <div className="pixel-grass"></div>
+      {decorations.map((decor) => (
+        <div 
+          key={decor.id}
+          className={`pixel-decor ${decor.type}`} 
+          style={{
+            top: decor.top, 
+            left: decor.left, 
+            transform: `scale(${decor.scale})`, 
+            opacity: decor.opacity
+          }}
+        ></div>
+      ))}
 
       {/* Sidebar for Desktop */}
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <div className="brand-icon"><LayoutDashboard size={20} /></div>
+          <div className="brand-icon"><PixelTracker size={20} /></div>
           <h2>Work Tracker</h2>
         </div>
         <nav className="sidebar-nav">
           <button className={`sidebar-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
-            <LayoutDashboard size={20} />
-            <span>Dashboard</span>
+            <PixelTracker size={20} />
+            <span>TRACKER</span>
           </button>
           <button className={`sidebar-item ${activeView === 'analysis' ? 'active' : ''}`} onClick={() => setActiveView('analysis')}>
-            <BarChart2 size={20} />
-            <span>Analisi</span>
+            <PixelAnalysis size={20} />
+            <span>ANALYSIS</span>
           </button>
           <button className={`sidebar-item ${activeView === 'sessions' ? 'active' : ''}`} onClick={() => setActiveView('sessions')}>
-            <Calendar size={20} />
-            <span>Sessioni</span>
+            <PixelHistory size={20} />
+            <span>HISTORY</span>
           </button>
           <button className={`sidebar-item ${activeView === 'settings' ? 'active' : ''}`} onClick={() => setActiveView('settings')}>
-            <SettingsIcon size={20} />
-            <span>Impostazioni</span>
+            <PixelConfig size={20} />
+            <span>CONFIG</span>
           </button>
         </nav>
         <div className="sidebar-footer">
@@ -414,20 +441,20 @@ export default function App() {
       {/* Nav Bar Fissa in Basso per Mobile */}
       <nav className="nav-bar mobile-nav">
         <button className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
-          <LayoutDashboard />
-          <span>Dashboard</span>
+          <PixelTracker size={24} color={activeView === 'dashboard' ? '#000' : 'var(--text-primary)'} />
+          <span>TRACKER</span>
         </button>
         <button className={`nav-item ${activeView === 'analysis' ? 'active' : ''}`} onClick={() => setActiveView('analysis')}>
-          <BarChart2 />
-          <span>Analisi</span>
+          <PixelAnalysis size={24} color={activeView === 'analysis' ? '#000' : 'var(--text-primary)'} />
+          <span>ANALYSIS</span>
         </button>
         <button className={`nav-item ${activeView === 'sessions' ? 'active' : ''}`} onClick={() => setActiveView('sessions')}>
-          <Calendar />
-          <span>Sessioni</span>
+          <PixelHistory size={24} color={activeView === 'sessions' ? '#000' : 'var(--text-primary)'} />
+          <span>HISTORY</span>
         </button>
         <button className={`nav-item ${activeView === 'settings' ? 'active' : ''}`} onClick={() => setActiveView('settings')}>
-          <SettingsIcon />
-          <span>Impostazioni</span>
+          <PixelConfig size={24} color={activeView === 'settings' ? '#000' : 'var(--text-primary)'} />
+          <span>CONFIG</span>
         </button>
       </nav>
     </div>

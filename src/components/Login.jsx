@@ -1,6 +1,7 @@
+import { PixelLogin, PixelLock, PixelMail, PixelDB, PixelShield, PixelSparkle } from './PixelIcons';
 import React, { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
-import { LogIn, Lock, Mail, Database, ShieldAlert, Sparkles } from 'lucide-react';
+
 
 export default function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState('');

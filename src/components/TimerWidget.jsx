@@ -1,5 +1,6 @@
+import { PixelPlay, PixelPause, PixelStop, PixelEdit, PixelClock, PixelMoney, PixelCheck, PixelAlert } from './PixelIcons';
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, Square, Edit2, Clock, Coins, Check, AlertCircle } from 'lucide-react';
+
 
 export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer }) {
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -18,6 +19,15 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
       const { startTime, isPaused, pausedDurationMs, lastPauseTime } = activeTimer;
       const start = new Date(startTime).getTime();
       
+      if (isScheduled) {
+        if (Date.now() >= start) {
+          setActiveTimer(prev => ({...prev, isScheduled: false}));
+        } else {
+          setElapsedMs(Date.now() - start);
+        }
+        return;
+      }
+
       if (isPaused) {
         const pauseTime = new Date(lastPauseTime).getTime();
         setElapsedMs(pauseTime - start - pausedDurationMs);
@@ -34,15 +44,18 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
   }, [activeTimer]);
 
   // Avvia il timer
-  const handleStart = () => {
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
+  const handleStart = (delayMinutes = 0) => {
+    const delay = typeof delayMinutes === 'number' ? delayMinutes : 0;
+    const nowMs = Date.now();
+    const startTimeMs = nowMs + delay * 60000;
+    const todayStr = new Date().toISOString().split('T')[0];
     const initialTimer = {
-      startTime: now.toISOString(),
+      startTime: new Date(startTimeMs).toISOString(),
       isPaused: false,
       pausedDurationMs: 0,
       lastPauseTime: null,
       date: todayStr,
+      isScheduled: delay > 0
     };
     setActiveTimer(initialTimer);
     setNotes('');
@@ -168,17 +181,19 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
 
   // Formatta millisecondi in HH:MM:SS
   const formatElapsed = (ms) => {
-    const totalSecs = Math.floor(ms / 1000);
+    const isNegative = ms < 0;
+    const absMs = Math.abs(ms);
+    const totalSecs = Math.floor(absMs / 1000);
     const hours = Math.floor(totalSecs / 3600);
     const minutes = Math.floor((totalSecs % 3600) / 60);
     const seconds = totalSecs % 60;
 
     const pad = (num) => String(num).padStart(2, '0');
-    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    return `${isNegative ? '-' : ''}${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   };
 
   // Guadagno accumulato stimato
-  const estimatedEarnings = (elapsedMs / (1000 * 60 * 60)) * hourlyRate;
+  const estimatedEarnings = (Math.max(0, elapsedMs) / (1000 * 60 * 60)) * hourlyRate;
 
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -192,10 +207,33 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
           <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>
             Nessuna sessione attiva al momento. Avvia il timer quando inizi a lavorare.
           </p>
-          <button className="btn btn-success" onClick={handleStart} style={{ padding: '16px' }}>
-            <Play size={20} fill="white" />
-            Inizia Sessione
-          </button>
+          <div style={{ display: 'flex', width: '100%', maxWidth: '300px', margin: '0 auto' }}>
+            <button className="btn btn-success arcade-btn" onClick={() => handleStart(0)} style={{ flex: 1, padding: '16px', borderRight: 'none' }}>
+              <Play size={20} fill="white" />
+              Inizia Sessione
+            </button>
+            <div style={{ position: 'relative', width: '56px' }}>
+              <button className="btn btn-success arcade-btn" style={{ width: '100%', height: '100%', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Clock size={20} fill="white" />
+              </button>
+              <select 
+                style={{ opacity: 0, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+                onChange={(e) => {
+                  if(e.target.value) handleStart(Number(e.target.value));
+                  e.target.value = "";
+                }}
+                defaultValue=""
+              >
+                <option value="" disabled>Ritarda avvio...</option>
+                <option value="1">Tra 1 minuto</option>
+                <option value="5">Tra 5 minuti</option>
+                <option value="10">Tra 10 minuti</option>
+                <option value="15">Tra 15 minuti</option>
+                <option value="30">Tra 30 minuti</option>
+                <option value="60">Tra 1 ora</option>
+              </select>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="timer-container">
@@ -208,7 +246,7 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
               {formatElapsed(elapsedMs)}
             </div>
             <div className="timer-label">
-              {activeTimer.isPaused ? 'In Pausa' : 'In Corso'}
+              {activeTimer.isScheduled ? 'Inizia tra...' : (activeTimer.isPaused ? 'In Pausa' : 'In Corso')}
             </div>
           </div>
 
@@ -266,18 +304,23 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
           </div>
 
           <div className="timer-controls">
-            {activeTimer.isPaused ? (
-              <button className="btn btn-primary" onClick={handleResume} style={{ flex: 1 }}>
+            {activeTimer.isScheduled ? (
+               <button className="btn btn-primary arcade-btn" onClick={() => setActiveTimer(prev => ({...prev, isScheduled: false, startTime: new Date().toISOString()}))} style={{ flex: 1 }}>
+                  <Play size={16} fill="white" />
+                  Avvia Ora
+               </button>
+            ) : activeTimer.isPaused ? (
+              <button className="btn btn-primary arcade-btn" onClick={handleResume} style={{ flex: 1 }}>
                 <Play size={16} fill="white" />
                 Riprendi
               </button>
             ) : (
-              <button className="btn btn-secondary" onClick={handlePause} style={{ flex: 1 }}>
+              <button className="btn btn-secondary arcade-btn" onClick={handlePause} style={{ flex: 1 }}>
                 <Pause size={16} />
                 Pausa
               </button>
             )}
-            <button className="btn btn-danger" onClick={handleStop} style={{ flex: 1 }}>
+            <button className="btn btn-danger arcade-btn" onClick={handleStop} style={{ flex: 1 }}>
               <Square size={16} fill="white" />
               Termina
             </button>

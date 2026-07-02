@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { TrendingUp, Clock, DollarSign, Calendar } from 'lucide-react';
+import { PixelTrend, PixelClock, PixelMoney, PixelHistory } from './PixelIcons';
 import TimerWidget from './TimerWidget';
 import { roundHours, getRoundedEarnings, formatHoursAndMinutes } from '../utils/rounding';
 
@@ -39,7 +39,7 @@ export default function Dashboard({ sessions, hourlyRate, activeTimer, setActive
       {/* 1. SEZIONE TOTALI STORICI (Arrotondati) */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div className="card-title" style={{ marginBottom: '4px' }}>
-          <TrendingUp size={18} color="var(--color-brand)" />
+          <PixelTrend size={18} color="var(--color-brand)" />
           <span>Riepilogo Totale (Arrotondato)</span>
         </div>
         <div className="stats-grid">
@@ -68,7 +68,7 @@ export default function Dashboard({ sessions, hourlyRate, activeTimer, setActive
       {/* 3. LISTA DELLE SESSIONI DI OGGI */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="card-title" style={{ marginBottom: '4px' }}>
-          <Calendar size={18} color="var(--color-brand)" />
+          <PixelHistory size={18} color="var(--color-brand)" />
           <span>Sessioni di Oggi ({formatDateIt(todayStr)})</span>
         </div>
         
@@ -89,7 +89,7 @@ export default function Dashboard({ sessions, hourlyRate, activeTimer, setActive
                       {session.notes || 'Sessione di Lavoro'}
                     </div>
                     <div className="session-time" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
-                      <Clock size={12} />
+                      <PixelClock size={12} />
                       <span>
                         {session.start_time.substring(0, 5)} - {session.end_time.substring(0, 5)}
                       </span>

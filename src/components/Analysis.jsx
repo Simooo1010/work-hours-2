@@ -1,5 +1,6 @@
+import { PixelHistory, PixelMoney, PixelChevronLeft, PixelChevronRight, PixelTrend, PixelPrint } from './PixelIcons';
 import React, { useState, useMemo } from 'react';
-import { Calendar, DollarSign, ChevronLeft, ChevronRight, TrendingUp, Printer } from 'lucide-react';
+
 import { roundHours, getRoundedEarnings, formatHoursAndMinutes, getRoundedEndTime } from '../utils/rounding';
 
 

@@ -16,6 +16,10 @@
   --color-brand-light: #e7ffd9;
   --color-brand-glow: rgba(57, 255, 20, 0.4);
   
+  --color-azure: #00BFFF;           /* Azzurro per light mode */
+  --color-purple: #9D00FF;          /* Viola per light mode */
+  --color-yellow: #FFFF00;          /* Giallo per light mode */
+  
   --color-success: #39FF14;         
   
   --color-accent: #FF5E00;          /* Fluo Orange/Red */
@@ -45,7 +49,7 @@
   
   /* Typography */
   --font-heading: 'VT323', monospace;
-  --font-body: 'Space Mono', monospace;
+  --font-body: 'VT323', monospace;
   
   --transition-fast: 0s; /* No transition for retro snappy feel, or 0.1s */
   --transition-normal: 0.1s steps(2, end);
@@ -847,6 +851,49 @@ input:focus, select:focus, textarea:focus {
   background: var(--bg-primary);
 }
 
+.nav-bar.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: white;
+  border-top: 3px solid #000;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 12px;
+  z-index: 100;
+  box-shadow: none;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: transparent;
+  border: 2px solid transparent;
+  padding: 8px 12px;
+  color: var(--text-primary);
+  font-family: 'VT323', monospace;
+  text-transform: uppercase;
+  transition: none;
+  border-radius: 0;
+}
+
+.nav-item span {
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.nav-item.active {
+  background: var(--primary-container);
+  border: 2px solid #000;
+  box-shadow: 2px 2px 0px #000;
+  color: #000;
+}
+
 .login-card {
   width: 100%;
   max-width: 380px;
@@ -983,8 +1030,8 @@ input:focus, select:focus, textarea:focus {
     flex-direction: column;
     width: 260px;
     min-width: 260px;
-    background: var(--bg-secondary);
-    border-right: 1px solid var(--border-color);
+    background: transparent;
+    border-right: none;
     position: sticky;
     top: 0;
     height: 100dvh;
@@ -997,6 +1044,8 @@ input:focus, select:focus, textarea:focus {
     align-items: center;
     gap: 12px;
     padding: 0 12px 40px 12px;
+    background: var(--bg-primary);
+    margin-bottom: 24px;
   }
 
   .brand-icon {
@@ -1008,10 +1057,11 @@ input:focus, select:focus, textarea:focus {
     align-items: center;
     justify-content: center;
     color: #fff;
+    border: 2px solid var(--border-color);
   }
 
   .sidebar-brand h2 {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
@@ -1020,7 +1070,7 @@ input:focus, select:focus, textarea:focus {
   .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 16px;
     flex: 1;
   }
 
@@ -1029,34 +1079,39 @@ input:focus, select:focus, textarea:focus {
     align-items: center;
     gap: 14px;
     padding: 14px 16px;
-    background: none;
-    border: none;
+    background: var(--bg-secondary);
+    border: 3px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
     border-radius: var(--radius-sm);
     color: var(--text-secondary);
-    font-size: 15px;
+    font-size: 20px;
     font-weight: 600;
     cursor: pointer;
-    transition: var(--transition-fast);
+    transition: transform 0.1s;
     width: 100%;
     text-align: left;
+    text-transform: uppercase;
   }
 
   .sidebar-item:hover {
     background: var(--bg-tertiary);
     color: var(--text-primary);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px var(--border-color);
   }
 
   .sidebar-item.active {
-    background: var(--color-brand-light);
-    color: var(--color-brand);
+    background: var(--color-brand);
+    color: #000;
   }
 
   .sidebar-item svg {
-    transition: var(--transition-fast);
+    transition: none;
   }
 
   .sidebar-item.active svg {
-    stroke: var(--color-brand);
+    stroke: #000;
+    fill: #000;
   }
 
   .sidebar-footer {
@@ -1308,37 +1363,41 @@ input:focus, select:focus, textarea:focus {
   }
   
   :root {
-    --bg-primary: #121316;            /* Dark, warm background */
-    --bg-secondary: #1a1c22;          /* Elevated card dark background */
-    --bg-tertiary: #272a31;           /* Container/input dark background */
-    --bg-tertiary-hover: #32363f;
+    --bg-primary: #000010;            /* Deep black/blue background */
+    --bg-secondary: #000020;          /* Slightly elevated card dark background */
+    --bg-tertiary: #000030;           /* Container/input dark background */
+    --bg-tertiary-hover: #000040;
     
-    --text-primary: #fbf9f8;          /* Warm light text */
-    --text-secondary: #c2c8c2;        /* Muted light text */
+    --text-primary: #39FF14;          /* Neon Green text (retro terminal feel) */
+    --text-secondary: #00FFCC;        /* Cyan for secondary text */
     --text-muted: #8e958f;            /* Outline grey */
     
-    --color-brand: #7ea38b;           /* Lighter Sage green for dark mode readability */
-    --color-brand-hover: #9bbfa7;
-    --color-brand-light: rgba(126, 163, 139, 0.15);
-    --color-brand-glow: rgba(126, 163, 139, 0.08);
+    --color-brand: #39FF14;           /* Fluo Neon Green primary */
+    --color-brand-hover: #32d611;
+    --color-brand-light: #003300;
+    --color-brand-glow: rgba(57, 255, 20, 0.4);
     
-    --color-success: #7ea38b;
+    --color-azure: #0000FF;           /* Blu scuro/fluo per dark mode */
+    --color-purple: #B200FF;          /* Viola energico per dark mode */
+    --color-yellow: #FFEA00;          /* Giallo per dark mode */
     
-    --color-accent: #d79577;          /* Lighter Terracotta for dark mode */
-    --color-accent-hover: #e0ab95;
-    --color-accent-light: rgba(215, 149, 119, 0.15);
+    --color-success: #39FF14;
     
-    --color-danger: #ffb4ab;
-    --color-danger-hover: #ffdad6;
+    --color-accent: #FF00FF;          /* Magenta accent for dark mode */
+    --color-accent-hover: #cc00cc;
+    --color-accent-light: #330033;
     
-    --border-color: #383f3a;          /* Darker borders matching Sage theme */
-    --border-highlight: #8e958f;
-    --glass-bg: rgba(26, 28, 34, 0.85);
-    --glass-border: rgba(142, 149, 143, 0.15);
+    --color-danger: #ff0044;
+    --color-danger-hover: #cc0033;
     
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 16px 24px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 24px 32px rgba(0, 0, 0, 0.4);
+    --border-color: #00FFCC;          /* Neon cyan borders */
+    --border-highlight: #00FFCC;
+    --glass-bg: rgba(0, 0, 32, 0.85);
+    --glass-border: #00FFCC;
+    
+    --shadow-sm: 2px 2px 0px #00FFCC;
+    --shadow-md: 4px 4px 0px #00FFCC;
+    --shadow-lg: 8px 8px 0px #00FFCC;
   }
 
   .print-document-screen {

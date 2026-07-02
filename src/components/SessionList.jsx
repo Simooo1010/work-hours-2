@@ -1,5 +1,6 @@
+import { PixelPlus, PixelTrash, PixelEdit, PixelHistory, PixelClock, PixelFile, PixelX, PixelAlert } from './PixelIcons';
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit2, Calendar, Clock, FileText, X, AlertTriangle } from 'lucide-react';
+
 import { roundHours, getRoundedEarnings } from '../utils/rounding';
 
 export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onDeleteSession }) {

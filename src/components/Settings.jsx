@@ -1,5 +1,6 @@
+import { PixelMoney, PixelDB, PixelLogout, PixelPhone, PixelGlobe, PixelKey, PixelShield, PixelSparkle, PixelCheck } from './PixelIcons';
 import React, { useState } from 'react';
-import { DollarSign, Database, LogOut, Smartphone, Globe, Key, Shield, Sparkles, Check } from 'lucide-react';
+
 import { supabase } from '../supabaseClient';
 
 export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
