@@ -1,6 +1,5 @@
-import { PixelMoney, PixelDB, PixelLogout, PixelPhone, PixelGlobe, PixelKey, PixelShield, PixelSparkle, PixelCheck } from './PixelIcons';
 import React, { useState } from 'react';
-
+import { DollarSign, Database, LogOut, Smartphone, Globe, Key, Shield, Sparkles, Check } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
@@ -45,7 +44,7 @@ export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
       {/* 1. IMPOSTAZIONE TARIFFA ORARIA */}
       <div className="card">
         <div className="card-title">
-          <PixelMoney size={18} color="var(--color-success)" />
+          <DollarSign size={18} color="var(--color-success)" />
           <span>Tariffa Oraria</span>
         </div>
 
@@ -71,7 +70,7 @@ export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
             </div>
           </div>
           <button type="submit" className="btn btn-primary" style={{ width: 'auto', padding: '12px 24px' }} disabled={loading}>
-            {isSaved ? <PixelCheck size={16} /> : 'Salva'}
+            {isSaved ? <Check size={16} /> : 'Salva'}
           </button>
         </form>
 
@@ -85,7 +84,7 @@ export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
       {/* 2. STATO DATABASE & DETTAGLI CONNESSIONE */}
       <div className="card">
         <div className="card-title">
-          <PixelDB size={18} color="var(--color-brand)" />
+          <Database size={18} color="var(--color-brand)" />
           <span>Stato Connessione</span>
         </div>
 
@@ -101,7 +100,7 @@ export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
 
             <div className="db-info-box" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-tertiary)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div style={{ fontWeight: '600', color: 'var(--color-brand)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <PixelPhone size={15} />
+                <Smartphone size={15} />
                 <span>Come abilitare il Cloud Sync e l'accesso su Safari iPhone:</span>
               </div>
               <ol style={{ paddingLeft: '20px', fontSize: '12px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -128,7 +127,7 @@ export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
 
             <div className="db-info-box" style={{ borderColor: 'var(--border-color)', backgroundColor: 'rgba(16, 185, 129, 0.02)' }}>
               <div style={{ fontWeight: '600', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                <PixelShield size={14} />
+                <Shield size={14} />
                 <span>Sicurezza attiva:</span>
               </div>
               <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
@@ -150,7 +149,7 @@ export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
           </div>
           
           <button className="btn btn-danger" onClick={handleLogoutClick} style={{ width: 'auto', padding: '10px 18px' }}>
-            <PixelLogout size={16} />
+            <LogOut size={16} />
             Esci
           </button>
         </div>

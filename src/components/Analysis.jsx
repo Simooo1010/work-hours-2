@@ -1,6 +1,5 @@
-import { PixelHistory, PixelMoney, PixelChevronLeft, PixelChevronRight, PixelTrend, PixelPrint } from './PixelIcons';
 import React, { useState, useMemo } from 'react';
-
+import { Calendar, DollarSign, ChevronLeft, ChevronRight, TrendingUp, Printer } from 'lucide-react';
 import { roundHours, getRoundedEarnings, formatHoursAndMinutes, getRoundedEndTime } from '../utils/rounding';
 
 
@@ -323,7 +322,7 @@ export default function Analysis({ sessions, hourlyRate }) {
       {/* 1. SEZIONE TOTALI STORICI */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div className="card-title" style={{ marginBottom: '4px' }}>
-          <PixelTrend size={18} color={roundingApplied ? 'var(--color-brand)' : 'var(--color-accent)'} />
+          <TrendingUp size={18} color={roundingApplied ? 'var(--color-brand)' : 'var(--color-accent)'} />
           <span>Totale Periodo ({roundingApplied ? 'Arrotondato' : 'Reale'})</span>
         </div>
         <div className="stats-grid">
@@ -344,7 +343,7 @@ export default function Analysis({ sessions, hourlyRate }) {
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div className="card-title" style={{ marginBottom: '0' }}>
-            <PixelHistory size={18} color={roundingApplied ? 'var(--color-brand)' : 'var(--color-accent)'} />
+            <Calendar size={18} color={roundingApplied ? 'var(--color-brand)' : 'var(--color-accent)'} />
             <span>Rendimento Settimanale</span>
           </div>
           
@@ -355,7 +354,7 @@ export default function Analysis({ sessions, hourlyRate }) {
               disabled={selectedWeekIndex >= uniqueWeeks.length - 1}
               style={{ width: '32px', height: '32px', opacity: selectedWeekIndex >= uniqueWeeks.length - 1 ? 0.3 : 1 }}
             >
-              <PixelChevronLeft size={16} />
+              <ChevronLeft size={16} />
             </button>
             <button 
               className="btn-icon" 
@@ -363,7 +362,7 @@ export default function Analysis({ sessions, hourlyRate }) {
               disabled={selectedWeekIndex <= 0}
               style={{ width: '32px', height: '32px', opacity: selectedWeekIndex <= 0 ? 0.3 : 1 }}
             >
-              <PixelChevronRight size={16} />
+              <ChevronRight size={16} />
             </button>
           </div>
         </div>
@@ -416,7 +415,7 @@ export default function Analysis({ sessions, hourlyRate }) {
       {/* 3. REPORT MENSILE CON TABS */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="card-title">
-          <PixelHistory size={18} color={roundingApplied ? 'var(--color-brand)' : 'var(--color-accent)'} />
+          <Calendar size={18} color={roundingApplied ? 'var(--color-brand)' : 'var(--color-accent)'} />
           <span>Statistiche Mensili</span>
         </div>
 
@@ -451,7 +450,7 @@ export default function Analysis({ sessions, hourlyRate }) {
       {/* 4. ESPORTAZIONE TABELLA E TOTALI ORE/GUADAGNO */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="card-title">
-          <PixelPrint size={18} color="var(--color-brand)" />
+          <Printer size={18} color="var(--color-brand)" />
           <span>Esportazione Ore (Arrotondate)</span>
         </div>
 
@@ -619,7 +618,7 @@ export default function Analysis({ sessions, hourlyRate }) {
 
             {/* PULSANTE STAMPA */}
             <button className="btn btn-primary" onClick={handlePrint} style={{ marginTop: '8px' }}>
-              <PixelPrint size={18} />
+              <Printer size={18} />
               Esporta PDF / Stampa
             </button>
           </div>

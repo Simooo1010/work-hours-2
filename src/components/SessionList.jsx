@@ -1,6 +1,5 @@
-import { PixelPlus, PixelTrash, PixelEdit, PixelHistory, PixelClock, PixelFile, PixelX, PixelAlert } from './PixelIcons';
 import React, { useState } from 'react';
-
+import { Plus, Trash2, Edit2, Calendar, Clock, FileText, X, AlertTriangle } from 'lucide-react';
 import { roundHours, getRoundedEarnings } from '../utils/rounding';
 
 export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onDeleteSession }) {
@@ -147,13 +146,13 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
       {/* 1. AGGIUNGI SESSIONE MANUALE */}
       <div className="card">
         <div className="card-title">
-          <PixelPlus size={18} color="var(--color-brand)" />
+          <Plus size={18} color="var(--color-brand)" />
           <span>Aggiungi Sessione Manualmente</span>
         </div>
 
         {formError && (
           <div className="login-error" style={{ marginBottom: '14px' }}>
-            <PixelAlert size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
+            <AlertTriangle size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
             {formError}
           </div>
         )}
@@ -218,7 +217,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
           )}
 
           <button type="submit" className="btn btn-primary" style={{ marginTop: '4px' }}>
-            <PixelPlus size={16} />
+            <Plus size={16} />
             Salva Sessione
           </button>
         </form>
@@ -227,7 +226,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
       {/* 2. ELENCO DELLE SESSIONI REGISTRATE */}
       <div className="card">
         <div className="card-title">
-          <PixelHistory size={18} color="var(--color-brand)" />
+          <Calendar size={18} color="var(--color-brand)" />
           <span>Sessioni Registrate</span>
         </div>
 
@@ -242,7 +241,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
                 <div className="session-info">
                   <div className="session-date">{formatDateIt(session.date)}</div>
                   <div className="session-time" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <PixelClock size={12} />
+                    <Clock size={12} />
                     <span>
                       {session.start_time.substring(0, 5)} - {session.end_time.substring(0, 5)}
                     </span>
@@ -252,7 +251,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
                   </div>
                   {session.notes && (
                     <div className="session-notes" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <PixelFile size={11} />
+                      <FileText size={11} />
                       <span>{session.notes}</span>
                     </div>
                   )}
@@ -271,7 +270,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
                       style={{ width: '32px', height: '32px' }}
                       title="Modifica"
                     >
-                      <PixelEdit size={13} />
+                      <Edit2 size={13} />
                     </button>
                     <button 
                       className="btn-icon" 
@@ -279,7 +278,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
                       style={{ width: '32px', height: '32px', color: 'var(--color-danger)' }}
                       title="Elimina"
                     >
-                      <PixelTrash size={13} />
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 </div>
@@ -299,13 +298,13 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
                 onClick={() => setEditingSession(null)}
                 style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
               >
-                <PixelX size={20} />
+                <X size={20} />
               </button>
             </div>
 
             {editError && (
               <div className="login-error">
-                <PixelAlert size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
+                <AlertTriangle size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
                 {editError}
               </div>
             )}

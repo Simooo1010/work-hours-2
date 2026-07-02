@@ -1,7 +1,6 @@
-import { PixelLogin, PixelLock, PixelMail, PixelDB, PixelShield, PixelSparkle } from './PixelIcons';
 import React, { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
-
+import { LogIn, Lock, Mail, Database, ShieldAlert, Sparkles } from 'lucide-react';
 
 export default function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
@@ -40,7 +39,7 @@ export default function Login({ onLoginSuccess }) {
       <div className="login-card">
         <div className="login-logo">
           <div className="logo-icon">
-            <PixelSparkle size={28} />
+            <Sparkles size={28} />
           </div>
           <h1>Work Tracker</h1>
           <p>Traccia le tue ore e i tuoi guadagni</p>
@@ -49,7 +48,7 @@ export default function Login({ onLoginSuccess }) {
         {isMock && (
           <div className="db-info-box" style={{ borderColor: 'var(--color-accent)', backgroundColor: 'rgba(140, 78, 55, 0.05)' }}>
             <div className="db-info-header" style={{ color: 'var(--color-accent)' }}>
-              <PixelDB size={16} />
+              <Database size={16} />
               <span>Modalità Dispositivo (Locale)</span>
             </div>
             <p style={{ color: 'var(--color-accent)', fontSize: '12px' }}>
@@ -61,7 +60,7 @@ export default function Login({ onLoginSuccess }) {
         {!isMock && (
           <div className="db-info-box" style={{ borderColor: 'var(--color-success)', backgroundColor: 'rgba(16, 185, 129, 0.05)' }}>
             <div className="db-info-header" style={{ color: 'var(--color-success)' }}>
-              <PixelDB size={16} />
+              <Database size={16} />
               <span>Database Cloud Attivo</span>
             </div>
             <p style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
@@ -72,7 +71,7 @@ export default function Login({ onLoginSuccess }) {
 
         {error && (
           <div className="login-error">
-            <PixelShield size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
+            <ShieldAlert size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
             {error}
           </div>
         )}
@@ -81,7 +80,7 @@ export default function Login({ onLoginSuccess }) {
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <div style={{ position: 'relative' }}>
-              <PixelMail size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <Mail size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 id="email"
                 type="email"
@@ -97,7 +96,7 @@ export default function Login({ onLoginSuccess }) {
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <div style={{ position: 'relative' }}>
-              <PixelLock size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <Lock size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 id="password"
                 type="password"
@@ -111,7 +110,7 @@ export default function Login({ onLoginSuccess }) {
           </div>
 
           <button type="submit" className="btn btn-primary" disabled={loading} style={{ marginTop: '8px' }}>
-            <PixelLogin size={18} />
+            <LogIn size={18} />
             {loading ? 'Accesso in corso...' : 'Accedi'}
           </button>
         </form>
