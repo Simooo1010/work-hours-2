@@ -147,13 +147,13 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
       {/* 1. AGGIUNGI SESSIONE MANUALE */}
       <div className="card">
         <div className="card-title">
-          <Plus size={18} color="var(--color-brand)" />
+          <PixelPlus size={18} color="var(--color-brand)" />
           <span>Aggiungi Sessione Manualmente</span>
         </div>
 
         {formError && (
           <div className="login-error" style={{ marginBottom: '14px' }}>
-            <AlertTriangle size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
+            <PixelAlert size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
             {formError}
           </div>
         )}
@@ -218,7 +218,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
           )}
 
           <button type="submit" className="btn btn-primary" style={{ marginTop: '4px' }}>
-            <Plus size={16} />
+            <PixelPlus size={16} />
             Salva Sessione
           </button>
         </form>
@@ -227,7 +227,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
       {/* 2. ELENCO DELLE SESSIONI REGISTRATE */}
       <div className="card">
         <div className="card-title">
-          <Calendar size={18} color="var(--color-brand)" />
+          <PixelHistory size={18} color="var(--color-brand)" />
           <span>Sessioni Registrate</span>
         </div>
 
@@ -242,7 +242,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
                 <div className="session-info">
                   <div className="session-date">{formatDateIt(session.date)}</div>
                   <div className="session-time" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Clock size={12} />
+                    <PixelClock size={12} />
                     <span>
                       {session.start_time.substring(0, 5)} - {session.end_time.substring(0, 5)}
                     </span>
@@ -252,7 +252,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
                   </div>
                   {session.notes && (
                     <div className="session-notes" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <FileText size={11} />
+                      <PixelFile size={11} />
                       <span>{session.notes}</span>
                     </div>
                   )}
@@ -271,7 +271,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
                       style={{ width: '32px', height: '32px' }}
                       title="Modifica"
                     >
-                      <Edit2 size={13} />
+                      <PixelEdit size={13} />
                     </button>
                     <button 
                       className="btn-icon" 
@@ -279,7 +279,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
                       style={{ width: '32px', height: '32px', color: 'var(--color-danger)' }}
                       title="Elimina"
                     >
-                      <Trash2 size={13} />
+                      <PixelTrash size={13} />
                     </button>
                   </div>
                 </div>
@@ -299,13 +299,13 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
                 onClick={() => setEditingSession(null)}
                 style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
               >
-                <X size={20} />
+                <PixelX size={20} />
               </button>
             </div>
 
             {editError && (
               <div className="login-error">
-                <AlertTriangle size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
+                <PixelAlert size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
                 {editError}
               </div>
             )}

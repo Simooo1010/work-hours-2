@@ -198,7 +198,7 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div className="card-title">
-        <Clock size={18} color="var(--color-brand)" />
+        <PixelClock size={18} color="var(--color-brand)" />
         <span>Tracciamento in Tempo Reale</span>
       </div>
 
@@ -209,12 +209,12 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
           </p>
           <div style={{ display: 'flex', width: '100%', maxWidth: '300px', margin: '0 auto' }}>
             <button className="btn btn-success arcade-btn" onClick={() => handleStart(0)} style={{ flex: 1, padding: '16px', borderRight: 'none' }}>
-              <Play size={20} fill="white" />
+              <PixelPlay size={20} fill="white" />
               Inizia Sessione
             </button>
             <div style={{ position: 'relative', width: '56px' }}>
               <button className="btn btn-success arcade-btn" style={{ width: '100%', height: '100%', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Clock size={20} fill="white" />
+                <PixelClock size={20} fill="white" />
               </button>
               <select 
                 style={{ opacity: 0, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: 'pointer' }}
@@ -253,7 +253,7 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
           <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
             <div className="stat-box" style={{ flex: 1, padding: '10px 14px' }}>
               <span className="stat-lbl" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Coins size={12} color="var(--color-success)" /> Stima Guadagno
+                <PixelMoney size={12} color="var(--color-success)" /> Stima Guadagno
               </span>
               <span className="stat-val earnings" style={{ fontSize: '18px' }}>
                 €{estimatedEarnings.toFixed(2)}
@@ -271,7 +271,7 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
                     style={{ padding: '4px 6px', fontSize: '14px', width: '75px', borderRadius: '4px' }}
                   />
                   <button className="btn-icon" onClick={saveAdjustedStart} style={{ width: '28px', height: '28px', backgroundColor: 'var(--color-brand)', color: 'white' }}>
-                    <Check size={14} />
+                    <PixelCheck size={14} />
                   </button>
                 </div>
               ) : (
@@ -284,7 +284,7 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
                     style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
                     title="Modifica ora di inizio"
                   >
-                    <Edit2 size={13} />
+                    <PixelEdit size={13} />
                   </button>
                 </div>
               )}
@@ -306,22 +306,22 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
           <div className="timer-controls">
             {activeTimer.isScheduled ? (
                <button className="btn btn-primary arcade-btn" onClick={() => setActiveTimer(prev => ({...prev, isScheduled: false, startTime: new Date().toISOString()}))} style={{ flex: 1 }}>
-                  <Play size={16} fill="white" />
+                  <PixelPlay size={16} fill="white" />
                   Avvia Ora
                </button>
             ) : activeTimer.isPaused ? (
               <button className="btn btn-primary arcade-btn" onClick={handleResume} style={{ flex: 1 }}>
-                <Play size={16} fill="white" />
+                <PixelPlay size={16} fill="white" />
                 Riprendi
               </button>
             ) : (
               <button className="btn btn-secondary arcade-btn" onClick={handlePause} style={{ flex: 1 }}>
-                <Pause size={16} />
+                <PixelPause size={16} />
                 Pausa
               </button>
             )}
             <button className="btn btn-danger arcade-btn" onClick={handleStop} style={{ flex: 1 }}>
-              <Square size={16} fill="white" />
+              <PixelStop size={16} fill="white" />
               Termina
             </button>
           </div>
