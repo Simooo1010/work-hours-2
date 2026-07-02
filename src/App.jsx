@@ -325,7 +325,7 @@ export default function App() {
         );
       case 'settings':
         return (
-          <PixelConfig
+          <Settings
             hourlyRate={hourlyRate}
             onUpdateRate={handleUpdateRate}
             user={user}
