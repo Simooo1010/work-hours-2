@@ -1,62 +1,54 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=VT323&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Design system colors - Retro Game Brutalist Theme */
-  --bg-primary: #ffffff;            /* Pure white background */
+  /* Design system colors - Serene Hours / Mindful Work Theme */
+  --bg-primary: #fbf9f8;            /* Warm off-white background */
   --bg-secondary: #ffffff;          /* Pure white for elevated cards */
-  --bg-tertiary: #f0f0f0;           /* Light grey container/input background */
-  --bg-tertiary-hover: #e0e0e0;
+  --bg-tertiary: #efeded;           /* Light grey/sage container/input background */
+  --bg-tertiary-hover: #eae8e7;
   
-  --text-primary: #000000;          /* Pure black */
-  --text-secondary: #333333;        /* Dark grey */
-  --text-muted: #666666;            /* Soft border/outline grey */
+  --text-primary: #1b1c1c;          /* Charcoal grey */
+  --text-secondary: #424844;        /* Dark muted green-grey */
+  --text-muted: #737874;            /* Soft border/outline grey */
   
-  --color-brand: #009922;           /* Rich Retro Green for light mode readability */
-  --color-brand-hover: #00771a;
-  --color-brand-light: #e0fbe0;
-  --color-brand-glow: rgba(0, 153, 34, 0.4);
+  --color-brand: #4d6055;           /* Sage green primary */
+  --color-brand-hover: #384b41;
+  --color-brand-light: #d2e8da;
+  --color-brand-glow: rgba(118, 138, 126, 0.08);
   
-  --color-azure: #008ae6;           /* Azzurro per light mode */
-  --color-azure-hover: #006bb3;
-  --color-azure-light: #e0f2ff;
-  --color-azure-glow: rgba(0, 138, 230, 0.3);
+  --color-success: #4d6055;         /* Using Sage for positive indicators */
   
-  --color-purple: #8a00e6;          /* Viola per light mode */
-  --color-yellow: #d4af37;          /* Giallo per light mode */
+  --color-accent: #8c4e37;          /* Terracotta for warm accents/toggles */
+  --color-accent-hover: #6f3722;
+  --color-accent-light: #ffdbcf;
+  --color-accent-glow: rgba(140, 78, 55, 0.08);
   
-  --color-success: #009922;         
+  --color-danger: #ba1a1a;
+  --color-danger-hover: #93000a;
+  --color-danger-glow: rgba(186, 26, 26, 0.08);
   
-  --color-accent: #FF5E00;          /* Fluo Orange/Red */
-  --color-accent-hover: #e65500;
-  --color-accent-light: #ffe6d9;
-  --color-accent-glow: rgba(255, 94, 0, 0.4);
+  --border-color: #c2c8c2;          /* Outline variant */
+  --border-highlight: #737874;      /* Outline focus */
+  --glass-bg: rgba(251, 249, 248, 0.85);
+  --glass-border: rgba(115, 120, 116, 0.15);
   
-  --color-danger: #ff0000;
-  --color-danger-hover: #cc0000;
-  --color-danger-glow: rgba(255, 0, 0, 0.4);
+  /* Tactical Soft Shadows */
+  --shadow-sm: 0 4px 12px rgba(118, 138, 126, 0.04);
+  --shadow-md: 0 16px 24px rgba(118, 138, 126, 0.06);
+  --shadow-lg: 0 24px 32px rgba(118, 138, 126, 0.08);
   
-  --border-color: #000000;          /* Bold black borders */
-  --border-highlight: #000000;      
-  --glass-bg: rgba(255, 255, 255, 1); /* Solid instead of glass for retro */
-  --glass-border: #000000;
-  
-  /* Hard Block Shadows */
-  --shadow-sm: 2px 2px 0px #000000;
-  --shadow-md: 4px 4px 0px #000000;
-  --shadow-lg: 8px 8px 0px #000000;
-  
-  /* Corner Radii - strictly 0 */
-  --radius-sm: 0px;
-  --radius-md: 0px;                
-  --radius-lg: 0px;
-  --radius-full: 0px;
+  /* Corner Radii */
+  --radius-sm: 8px;
+  --radius-md: 24px;                /* Main task cards use rounded-xl/24px */
+  --radius-lg: 24px;
+  --radius-full: 9999px;
   
   /* Typography */
-  --font-heading: 'VT323', monospace;
-  --font-body: 'VT323', monospace;
+  --font-heading: 'Manrope', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
   
-  --transition-fast: 0s; /* No transition for retro snappy feel, or 0.1s */
-  --transition-normal: 0.1s steps(2, end);
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Base Reset */
@@ -101,7 +93,7 @@ h1, h2, h3, h4, h5, h6 {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-bottom: 64px; /* Space for 64px bottom nav on mobile */
+  padding-bottom: 104px; /* Space for bottom nav on mobile */
   width: 100%;
 }
 
@@ -113,68 +105,76 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
 }
 
-/* Nav Bar - Mobile First: full-width sticky bottom bar */
+.mobile-nav {
+  display: grid;
+}
+/* Nav Bar (Bottom Floating Pill for Modern Aesthetics) */
 .nav-bar {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  height: 64px;
-  background: var(--bg-secondary);
-  border-top: 3px solid var(--border-color);
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 440px;
+  height: 66px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 9999px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  align-items: stretch;
+  align-items: center;
+  justify-items: center;
   z-index: 100;
-  box-shadow: 0 -4px 0 var(--border-color);
-  padding: 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  padding: 0 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 768px) {
+  .nav-bar {
+    bottom: 24px;
+    height: 70px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+  }
 }
 
 .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 3px;
-  background: transparent;
+  gap: 4px;
+  background: none;
   border: none;
-  border-left: 2px solid transparent;
   color: var(--text-secondary);
-  font-family: var(--font-heading);
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   width: 100%;
   height: 100%;
-  padding: 6px 4px;
+  justify-content: center;
+  transition: var(--transition-fast);
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.nav-item span {
-  font-size: 13px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.nav-item svg {
-  width: 24px;
-  height: 24px;
-  display: block;
 }
 
 .nav-item.active {
-  background: var(--color-brand);
-  color: var(--bg-primary);
+  color: var(--color-brand);
 }
 
-.nav-item.active span {
-  color: var(--bg-primary);
+.nav-item svg {
+  width: 22px;
+  height: 22px;
+  transition: transform var(--transition-fast);
 }
 
-.nav-item:not(.active):hover {
-  background: var(--bg-tertiary);
+.nav-item.active svg {
+  fill: rgba(77, 96, 85, 0.1);
+  stroke: var(--color-brand);
+}
+
+.nav-item:active svg {
+  transform: scale(0.92);
 }
 
 /* Common UI Elements */
@@ -227,15 +227,11 @@ h1, h2, h3, h4, h5, h6 {
 /* Card - Core UI Element */
 .card {
   background: var(--bg-secondary);
-  border: 3px solid var(--border-color);
-  border-radius: var(--radius-md); 
+  border: none; /* No stark borders as per spec */
+  border-radius: var(--radius-md); /* 24px corners */
   padding: 24px;
-  box-shadow: var(--shadow-md); 
+  box-shadow: var(--shadow-md); /* Tactical ambient shadow */
   transition: var(--transition-normal);
-  overflow: hidden;
-  min-width: 0;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .card:hover {
@@ -280,7 +276,7 @@ input, select, textarea {
   width: 100%;
   min-width: 0;
   background: var(--bg-tertiary);
-  border: 3px solid var(--border-color);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   padding: 12px 16px;
   color: var(--text-primary);
@@ -289,7 +285,6 @@ input, select, textarea {
   outline: none;
   transition: var(--transition-fast);
   box-sizing: border-box;
-  box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1);
 }
 
 input:focus, select:focus, textarea:focus {
@@ -307,26 +302,23 @@ input:focus, select:focus, textarea:focus {
   height: 48px; /* 44px+ hit target */
   padding: 0 24px;
   border-radius: var(--radius-sm);
-  font-family: var(--font-heading); /* Retro font for buttons */
-  font-size: 20px;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition-fast);
-  border: 3px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
+  border: none;
   width: 100%;
   touch-action: manipulation;
 }
 
 .btn-primary {
   background: var(--color-brand);
-  color: #000000 !important;
+  color: #fff;
 }
 
 .btn-primary:hover {
   background: var(--color-brand-hover);
-  color: #000000 !important;
 }
 
 .btn-primary:active {
@@ -335,12 +327,11 @@ input:focus, select:focus, textarea:focus {
 
 .btn-success {
   background: var(--color-brand);
-  color: #000000 !important;
+  color: #fff;
 }
 
 .btn-success:hover {
   background: var(--color-brand-hover);
-  color: #000000 !important;
 }
 
 .btn-success:active {
@@ -375,9 +366,8 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   justify-content: center;
   background: var(--bg-tertiary);
-  border: 3px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  color: var(--text-primary);
+  border: 1px solid transparent;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: var(--transition-fast);
 }
@@ -401,12 +391,12 @@ input:focus, select:focus, textarea:focus {
   height: 200px;
   border-radius: var(--radius-full);
   background: var(--bg-secondary);
-  border: 4px solid var(--border-color);
+  border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
   transition: var(--transition-normal);
 }
 
@@ -521,13 +511,12 @@ input:focus, select:focus, textarea:focus {
 
 .stat-box {
   background: var(--bg-secondary);
-  border: 3px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  border: 1px solid rgba(115, 120, 116, 0.12);
+  border-radius: 16px;
   padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: var(--shadow-sm);
 }
 
 .stat-box.highlight {
@@ -855,8 +844,6 @@ input:focus, select:focus, textarea:focus {
   background: var(--bg-primary);
 }
 
-/* Nav bar mobile-nav class - no extra overrides needed, base .nav-bar is already mobile-first */
-
 .login-card {
   width: 100%;
   max-width: 380px;
@@ -993,8 +980,8 @@ input:focus, select:focus, textarea:focus {
     flex-direction: column;
     width: 260px;
     min-width: 260px;
-    background: transparent;
-    border-right: none;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
     position: sticky;
     top: 0;
     height: 100dvh;
@@ -1007,8 +994,6 @@ input:focus, select:focus, textarea:focus {
     align-items: center;
     gap: 12px;
     padding: 0 12px 40px 12px;
-    background: var(--bg-primary);
-    margin-bottom: 24px;
   }
 
   .brand-icon {
@@ -1020,11 +1005,10 @@ input:focus, select:focus, textarea:focus {
     align-items: center;
     justify-content: center;
     color: #fff;
-    border: 2px solid var(--border-color);
   }
 
   .sidebar-brand h2 {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
@@ -1033,7 +1017,7 @@ input:focus, select:focus, textarea:focus {
   .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 8px;
     flex: 1;
   }
 
@@ -1042,39 +1026,34 @@ input:focus, select:focus, textarea:focus {
     align-items: center;
     gap: 14px;
     padding: 14px 16px;
-    background: var(--bg-secondary);
-    border: 3px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
+    background: none;
+    border: none;
     border-radius: var(--radius-sm);
     color: var(--text-secondary);
-    font-size: 20px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.1s;
+    transition: var(--transition-fast);
     width: 100%;
     text-align: left;
-    text-transform: uppercase;
   }
 
   .sidebar-item:hover {
     background: var(--bg-tertiary);
     color: var(--text-primary);
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0px var(--border-color);
   }
 
   .sidebar-item.active {
-    background: var(--color-brand);
-    color: #000;
+    background: var(--color-brand-light);
+    color: var(--color-brand);
   }
 
   .sidebar-item svg {
-    transition: none;
+    transition: var(--transition-fast);
   }
 
   .sidebar-item.active svg {
-    stroke: #000;
-    fill: #000;
+    stroke: var(--color-brand);
   }
 
   .sidebar-footer {
@@ -1093,8 +1072,8 @@ input:focus, select:focus, textarea:focus {
     display: none !important; /* Hide top header since branding is in sidebar */
   }
 
-  .nav-bar {
-    display: none !important; /* Hide bottom nav on desktop - sidebar takes over */
+  .mobile-nav {
+    display: none !important; /* Hide floating pill nav */
   }
 
   .view-content {
@@ -1292,18 +1271,19 @@ input:focus, select:focus, textarea:focus {
 /* RESPONSIVE MOBILE FIXES */
 @media (max-width: 480px) {
   .view-content {
-    padding: 12px;
-    gap: 12px;
+    padding: 16px;
+    gap: 16px;
   }
   .card {
-    padding: 14px;
-    border-radius: var(--radius-sm); /* Keep retro 0px radius */
+    padding: 16px;
+    border-radius: 20px;
   }
   .stats-grid {
-    gap: 10px;
+    gap: 12px;
   }
   .stat-box {
-    padding: 12px;
+    padding: 14px;
+    border-radius: 12px;
   }
   input, select, textarea {
     padding: 10px 12px;
@@ -1325,45 +1305,37 @@ input:focus, select:focus, textarea:focus {
   }
   
   :root {
-    --bg-primary: #000010;            /* Deep black/blue background */
-    --bg-secondary: #000020;          /* Slightly elevated card dark background */
-    --bg-tertiary: #000030;           /* Container/input dark background */
-    --bg-tertiary-hover: #000040;
+    --bg-primary: #121316;            /* Dark, warm background */
+    --bg-secondary: #1a1c22;          /* Elevated card dark background */
+    --bg-tertiary: #272a31;           /* Container/input dark background */
+    --bg-tertiary-hover: #32363f;
     
-    --text-primary: #39FF14;          /* Neon Green text (retro terminal feel) */
-    --text-secondary: #00e5ff;        /* Neon Azure for secondary text */
+    --text-primary: #fbf9f8;          /* Warm light text */
+    --text-secondary: #c2c8c2;        /* Muted light text */
     --text-muted: #8e958f;            /* Outline grey */
     
-    --color-brand: #39FF14;           /* Fluo Neon Green primary */
-    --color-brand-hover: #32d611;
-    --color-brand-light: #003300;
-    --color-brand-glow: rgba(57, 255, 20, 0.4);
+    --color-brand: #7ea38b;           /* Lighter Sage green for dark mode readability */
+    --color-brand-hover: #9bbfa7;
+    --color-brand-light: rgba(126, 163, 139, 0.15);
+    --color-brand-glow: rgba(126, 163, 139, 0.08);
     
-    --color-azure: #00e5ff;           /* Fluo Neon Azure for dark mode */
-    --color-azure-hover: #00b8cc;
-    --color-azure-light: #002933;
-    --color-azure-glow: rgba(0, 229, 255, 0.4);
+    --color-success: #7ea38b;
     
-    --color-purple: #B200FF;          /* Viola energico per dark mode */
-    --color-yellow: #FFEA00;          /* Giallo per dark mode */
+    --color-accent: #d79577;          /* Lighter Terracotta for dark mode */
+    --color-accent-hover: #e0ab95;
+    --color-accent-light: rgba(215, 149, 119, 0.15);
     
-    --color-success: #39FF14;
+    --color-danger: #ffb4ab;
+    --color-danger-hover: #ffdad6;
     
-    --color-accent: #FF00FF;          /* Magenta accent for dark mode */
-    --color-accent-hover: #cc00cc;
-    --color-accent-light: #330033;
+    --border-color: #383f3a;          /* Darker borders matching Sage theme */
+    --border-highlight: #8e958f;
+    --glass-bg: rgba(26, 28, 34, 0.85);
+    --glass-border: rgba(142, 149, 143, 0.15);
     
-    --color-danger: #ff0044;
-    --color-danger-hover: #cc0033;
-    
-    --border-color: #00e5ff;          /* Neon cyan/azure borders */
-    --border-highlight: #39FF14;
-    --glass-bg: rgba(0, 0, 32, 0.85);
-    --glass-border: #00e5ff;
-    
-    --shadow-sm: 2px 2px 0px #00e5ff;
-    --shadow-md: 4px 4px 0px #00e5ff;
-    --shadow-lg: 8px 8px 0px #00e5ff;
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 16px 24px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 24px 32px rgba(0, 0, 0, 0.4);
   }
 
   .print-document-screen {
@@ -1388,131 +1360,5 @@ input:focus, select:focus, textarea:focus {
   .badge-demo {
     background: var(--bg-tertiary);
     color: var(--text-secondary);
-  }
-}
-
-/* RETRO GAME / ARCADE STYLES */
-.arcade-border {
-  border: 3px solid var(--border-color);
-  box-shadow: var(--shadow-md);
-  border-radius: 0;
-}
-
-.arcade-btn {
-  border: 3px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  border-radius: 0;
-  transition: transform 0.1s, box-shadow 0.1s;
-}
-
-.arcade-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 0px 0px 0px var(--border-color);
-}
-
-/* PIXEL ART DECORATIONS */
-.pixel-decor {
-  position: absolute;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.pixel-cloud {
-  width: 96px;
-  height: 48px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6"><path fill="%23e0e0e0" d="M3 4V3h1V2h2V1h3v1h1v1h1v2H3z"/><path fill="%23ffffff" d="M3 4V3h1V2h2V1h3v1h1v1h1v2H3z" transform="translate(-1, -1)"/></svg>');
-  background-repeat: no-repeat;
-  background-size: contain;
-  opacity: 0.8;
-}
-
-.pixel-grass {
-  width: 32px;
-  height: 32px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="%2339FF14" d="M0 16h16v-4H0v4zm2-6h2v2H2v-2zm4-2h2v4H6v-4zm6 2h2v2h-2v-2z"/></svg>');
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
-.pixel-cat {
-  width: 48px;
-  height: 32px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="%23FF5E00" d="M2 10h12v4H2zm1-2h2v2H3zm8 0h2v2h-2zm-9-4h2v4H2zM12 4h2v4h-2zm-7 2h6v2H5z"/></svg>');
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
-.pixel-flower {
-  width: 32px;
-  height: 32px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><path fill="%23FF5E00" d="M3 0h2v2H3V0zM0 3h2v2H0V3zm6 0h2v2H6V3zM3 6h2v2H3V6z"/><path fill="%23ffffff" d="M3 3h2v2H3V3z"/><path fill="%2339FF14" d="M3 7h2v1H3V7zm1 1v2H3V8h1z"/></svg>');
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
-.pixel-bird {
-  width: 48px;
-  height: 32px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 8"><path fill="%2339FF14" d="M2 4h2V3h4v1h2V3h2V2h-2V1H8V0H4v1H2v1H0v1h2v1z"/></svg>');
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
-@keyframes drift-right {
-  0% { left: -100px; }
-  100% { left: 100%; }
-}
-
-@keyframes drift-left {
-  0% { left: 100%; }
-  100% { left: -100px; }
-}
-
-.anim-drift-right {
-  animation: drift-right 45s linear infinite;
-}
-
-.anim-drift-left {
-  animation: drift-left 40s linear infinite;
-}
-
-/* Adjustments for the new retro style */
-body {
-  background-image: 
-    linear-gradient(rgba(115, 120, 116, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(115, 120, 116, 0.08) 1px, transparent 1px);
-  background-size: 20px 20px;
-  background-color: var(--bg-primary);
-}
-
-/* Card decor items sitting on top edges */
-.pixel-decor-card {
-  position: absolute;
-  top: -12px;
-  width: 16px;
-  height: 16px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.pixel-decor-card.pixel-grass {
-  width: 24px;
-  height: 16px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="%2339FF14" d="M2 10h2v4H2zm4-4h2v8H6zm6 2h2v6h-2z"/></svg>');
-}
-
-.pixel-decor-card.pixel-flower {
-  width: 16px;
-  height: 16px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect x="7" y="10" width="2" height="6" fill="%2339FF14"/><rect x="5" y="6" width="6" height="4" fill="%23FF00FF"/><rect x="7" y="4" width="2" height="2" fill="%23FF00FF"/><rect x="7" y="7" width="2" height="2" fill="%23FFEA00"/></svg>');
-}
-
-/* Stack form rows on mobile devices to prevent overflow */
-@media (max-width: 767px) {
-  .form-row {
-    grid-template-columns: 1fr !important;
-    gap: 6px !important;
   }
 }

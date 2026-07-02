@@ -1,6 +1,5 @@
 import { PixelPlus, PixelTrash, PixelEdit, PixelHistory, PixelClock, PixelFile, PixelX, PixelAlert } from './PixelIcons';
 import React, { useState } from 'react';
-import { CardDecor } from './Dashboard';
 
 import { roundHours, getRoundedEarnings } from '../utils/rounding';
 
@@ -146,8 +145,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
   return (
     <div className="view-content session-grid">
       {/* 1. AGGIUNGI SESSIONE MANUALE */}
-      <div className="card" style={{ position: 'relative', overflow: 'hidden' }}>
-        <CardDecor />
+      <div className="card">
         <div className="card-title">
           <PixelPlus size={18} color="var(--color-brand)" />
           <span>Aggiungi Sessione Manualmente</span>
@@ -160,8 +158,8 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
           </div>
         )}
 
-        <form onSubmit={handleAddSessionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%', minWidth: 0 }}>
-          <div className="form-group" style={{ minWidth: 0 }}>
+        <form onSubmit={handleAddSessionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="form-group">
             <label htmlFor="date">Data</label>
             <input
               id="date"
@@ -169,12 +167,11 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              style={{ width: '100%', minWidth: 0 }}
             />
           </div>
 
-          <div className="form-row" style={{ minWidth: 0 }}>
-            <div className="form-group" style={{ minWidth: 0 }}>
+          <div className="form-row">
+            <div className="form-group">
               <label htmlFor="startTime">Inizio</label>
               <input
                 id="startTime"
@@ -182,10 +179,9 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 required
-                style={{ width: '100%', minWidth: 0 }}
               />
             </div>
-            <div className="form-group" style={{ minWidth: 0 }}>
+            <div className="form-group">
               <label htmlFor="endTime">Fine</label>
               <input
                 id="endTime"
@@ -193,7 +189,6 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 required
-                style={{ width: '100%', minWidth: 0 }}
               />
             </div>
           </div>
@@ -230,8 +225,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
       </div>
 
       {/* 2. ELENCO DELLE SESSIONI REGISTRATE */}
-      <div className="card" style={{ position: 'relative' }}>
-        <CardDecor />
+      <div className="card">
         <div className="card-title">
           <PixelHistory size={18} color="var(--color-brand)" />
           <span>Sessioni Registrate</span>

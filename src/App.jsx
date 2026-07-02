@@ -1,7 +1,6 @@
-import { PixelTracker, PixelAnalysis, PixelHistory, PixelConfig, PixelAlert, PixelSparkle } from './components/PixelIcons';
 import React, { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
-
+import { LayoutDashboard, BarChart2, Calendar, Settings as SettingsIcon, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Analysis from './components/Analysis';
@@ -31,32 +30,6 @@ export default function App() {
 
   // Stato per i secondi trascorsi nel banner mini-timer
   const [miniElapsedMs, setMiniElapsedMs] = useState(0);
-
-  const [decorations, setDecorations] = useState([]);
-
-  useEffect(() => {
-    const decors = [];
-    const types = ['pixel-cloud', 'pixel-cloud', 'pixel-bird', 'pixel-cat'];
-    const numDecors = 6 + Math.floor(Math.random() * 6);
-    for (let i = 0; i < numDecors; i++) {
-      const type = types[Math.floor(Math.random() * types.length)];
-      let animClass = '';
-      if (type === 'pixel-cloud' || type === 'pixel-bird' || type === 'pixel-cat') {
-         animClass = Math.random() > 0.5 ? 'anim-drift-right' : 'anim-drift-left';
-      }
-      decors.push({
-        id: i,
-        type: type,
-        animClass: animClass,
-        top: `${Math.floor(Math.random() * 80)}%`,
-        left: animClass ? '-10%' : `${Math.floor(Math.random() * 90)}%`,
-        scale: 0.5 + Math.random() * 0.8,
-        opacity: 0.5 + Math.random() * 0.4,
-        animDelay: `-${Math.floor(Math.random() * 45)}s`
-      });
-    }
-    setDecorations(decors);
-  }, []);
 
   // Sincronizza activeTimer in localStorage
   useEffect(() => {
@@ -137,7 +110,7 @@ export default function App() {
         if (profileError) {
           console.error('Errore caricamento profilo:', profileError);
           // Se non esiste il profilo su Supabase (nuovo utente), lo creiamo
-          if (profileError.message?.includes('rows') || profileError.code === 'PGRST116' || profileError.code === '42P01') {
+          if (!supabase.isMock && profileError.message?.includes('rows') || profileError.code === 'PGRST116') {
             const { data: newProfile } = await supabase
               .from('profiles')
               .insert({ id: user.id, hourly_rate: 2.50 })
@@ -145,16 +118,10 @@ export default function App() {
               .single();
             if (newProfile) {
               setHourlyRate(Number(newProfile.hourly_rate));
-            } else {
-              setHourlyRate(2.50);
             }
-          } else {
-            setHourlyRate(2.50);
           }
         } else if (profile) {
-          setHourlyRate(Number(profile.hourly_rate) || 2.50);
-        } else {
-          setHourlyRate(2.50);
+          setHourlyRate(Number(profile.hourly_rate));
         }
 
         // 2. Carica tutte le sessioni lavorative dell'utente
@@ -352,7 +319,7 @@ export default function App() {
   if (loading && user) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100dvh', gap: '16px', backgroundColor: 'var(--bg-primary)' }}>
-        <PixelAlert size={32} style={{ color: 'var(--color-brand)' }} />
+        <Loader2 size={32} className="animate-spin" style={{ color: 'var(--color-brand)' }} />
         <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: '500' }}>Caricamento dati...</span>
       </div>
     );
@@ -368,43 +335,28 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {/* Background Decor */}
-      {decorations.map((decor) => (
-        <div 
-          key={decor.id}
-          className={`pixel-decor ${decor.type} ${decor.animClass}`} 
-          style={{
-            top: decor.top, 
-            left: decor.left, 
-            transform: `scale(${decor.scale})`, 
-            opacity: decor.opacity,
-            animationDelay: decor.animDelay
-          }}
-        ></div>
-      ))}
-
       {/* Sidebar for Desktop */}
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <div className="brand-icon"><PixelTracker size={20} /></div>
+          <div className="brand-icon"><LayoutDashboard size={20} /></div>
           <h2>Work Tracker</h2>
         </div>
         <nav className="sidebar-nav">
           <button className={`sidebar-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
-            <PixelTracker size={20} />
-            <span>TRACKER</span>
+            <LayoutDashboard size={20} />
+            <span>Dashboard</span>
           </button>
           <button className={`sidebar-item ${activeView === 'analysis' ? 'active' : ''}`} onClick={() => setActiveView('analysis')}>
-            <PixelAnalysis size={20} />
-            <span>ANALYSIS</span>
+            <BarChart2 size={20} />
+            <span>Analisi</span>
           </button>
           <button className={`sidebar-item ${activeView === 'sessions' ? 'active' : ''}`} onClick={() => setActiveView('sessions')}>
-            <PixelHistory size={20} />
-            <span>HISTORY</span>
+            <Calendar size={20} />
+            <span>Sessioni</span>
           </button>
           <button className={`sidebar-item ${activeView === 'settings' ? 'active' : ''}`} onClick={() => setActiveView('settings')}>
-            <PixelConfig size={20} />
-            <span>CONFIG</span>
+            <SettingsIcon size={20} />
+            <span>Impostazioni</span>
           </button>
         </nav>
         <div className="sidebar-footer">
@@ -454,20 +406,20 @@ export default function App() {
       {/* Nav Bar Fissa in Basso per Mobile */}
       <nav className="nav-bar mobile-nav">
         <button className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
-          <PixelTracker size={24} color={activeView === 'dashboard' ? 'var(--bg-primary)' : 'var(--text-primary)'} />
-          <span>TRACKER</span>
+          <LayoutDashboard />
+          <span>Dashboard</span>
         </button>
         <button className={`nav-item ${activeView === 'analysis' ? 'active' : ''}`} onClick={() => setActiveView('analysis')}>
-          <PixelAnalysis size={24} color={activeView === 'analysis' ? 'var(--bg-primary)' : 'var(--text-primary)'} />
-          <span>ANALYSIS</span>
+          <BarChart2 />
+          <span>Analisi</span>
         </button>
         <button className={`nav-item ${activeView === 'sessions' ? 'active' : ''}`} onClick={() => setActiveView('sessions')}>
-          <PixelHistory size={24} color={activeView === 'sessions' ? 'var(--bg-primary)' : 'var(--text-primary)'} />
-          <span>HISTORY</span>
+          <Calendar />
+          <span>Sessioni</span>
         </button>
         <button className={`nav-item ${activeView === 'settings' ? 'active' : ''}`} onClick={() => setActiveView('settings')}>
-          <PixelConfig size={24} color={activeView === 'settings' ? 'var(--bg-primary)' : 'var(--text-primary)'} />
-          <span>CONFIG</span>
+          <SettingsIcon />
+          <span>Impostazioni</span>
         </button>
       </nav>
     </div>

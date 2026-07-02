@@ -1,30 +1,7 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { PixelTrend, PixelClock, PixelMoney, PixelHistory } from './PixelIcons';
+import React, { useMemo } from 'react';
+import { TrendingUp, Clock, DollarSign, Calendar } from 'lucide-react';
 import TimerWidget from './TimerWidget';
 import { roundHours, getRoundedEarnings, formatHoursAndMinutes } from '../utils/rounding';
-
-// CardDecor helper component to draw grass/flowers on top of card edges
-export const CardDecor = () => {
-  const [decor, setDecor] = useState(null);
-  useEffect(() => {
-    const items = ['grass', 'flower', 'none'];
-    const selected = items[Math.floor(Math.random() * items.length)];
-    if (selected !== 'none') {
-      setDecor({
-        type: selected,
-        left: `${10 + Math.random() * 80}%`
-      });
-    }
-  }, []);
-
-  if (!decor) return null;
-  return (
-    <div 
-      className={`pixel-decor-card pixel-${decor.type}`}
-      style={{ left: decor.left }}
-    />
-  );
-};
 
 export default function Dashboard({ sessions, hourlyRate, activeTimer, setActiveTimer, onSaveSession }) {
   
@@ -60,10 +37,9 @@ export default function Dashboard({ sessions, hourlyRate, activeTimer, setActive
   return (
     <div className="view-content dashboard-grid">
       {/* 1. SEZIONE TOTALI STORICI (Arrotondati) */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px', position: 'relative' }}>
-        <CardDecor />
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div className="card-title" style={{ marginBottom: '4px' }}>
-          <PixelTrend size={18} color="var(--color-brand)" />
+          <TrendingUp size={18} color="var(--color-brand)" />
           <span>Riepilogo Totale (Arrotondato)</span>
         </div>
         <div className="stats-grid">
@@ -90,10 +66,9 @@ export default function Dashboard({ sessions, hourlyRate, activeTimer, setActive
       />
 
       {/* 3. LISTA DELLE SESSIONI DI OGGI */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative' }}>
-        <CardDecor />
+      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="card-title" style={{ marginBottom: '4px' }}>
-          <PixelHistory size={18} color="var(--color-brand)" />
+          <Calendar size={18} color="var(--color-brand)" />
           <span>Sessioni di Oggi ({formatDateIt(todayStr)})</span>
         </div>
         
@@ -114,7 +89,7 @@ export default function Dashboard({ sessions, hourlyRate, activeTimer, setActive
                       {session.notes || 'Sessione di Lavoro'}
                     </div>
                     <div className="session-time" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
-                      <PixelClock size={12} />
+                      <Clock size={12} />
                       <span>
                         {session.start_time.substring(0, 5)} - {session.end_time.substring(0, 5)}
                       </span>

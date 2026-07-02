@@ -1,14 +1,11 @@
-import { PixelPlay, PixelPause, PixelStop, PixelEdit, PixelClock, PixelMoney, PixelCheck, PixelAlert } from './PixelIcons';
 import React, { useState, useEffect } from 'react';
-import { CardDecor } from './Dashboard';
-
+import { Play, Pause, Square, Edit2, Clock, Coins, Check, AlertCircle } from 'lucide-react';
 
 export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer }) {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isEditingStart, setIsEditingStart] = useState(false);
   const [editStartTimeVal, setEditStartTimeVal] = useState('');
   const [notes, setNotes] = useState('');
-  const [showDelayMenu, setShowDelayMenu] = useState(false);
 
   // Aggiorna il contatore del timer ogni secondo
   useEffect(() => {
@@ -21,15 +18,6 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
       const { startTime, isPaused, pausedDurationMs, lastPauseTime } = activeTimer;
       const start = new Date(startTime).getTime();
       
-      if (isScheduled) {
-        if (Date.now() >= start) {
-          setActiveTimer(prev => ({...prev, isScheduled: false}));
-        } else {
-          setElapsedMs(Date.now() - start);
-        }
-        return;
-      }
-
       if (isPaused) {
         const pauseTime = new Date(lastPauseTime).getTime();
         setElapsedMs(pauseTime - start - pausedDurationMs);
@@ -46,18 +34,15 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
   }, [activeTimer]);
 
   // Avvia il timer
-  const handleStart = (delayMinutes = 0) => {
-    const delay = typeof delayMinutes === 'number' ? delayMinutes : 0;
-    const nowMs = Date.now();
-    const startTimeMs = nowMs + delay * 60000;
-    const todayStr = new Date().toISOString().split('T')[0];
+  const handleStart = () => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
     const initialTimer = {
-      startTime: new Date(startTimeMs).toISOString(),
+      startTime: now.toISOString(),
       isPaused: false,
       pausedDurationMs: 0,
       lastPauseTime: null,
       date: todayStr,
-      isScheduled: delay > 0
     };
     setActiveTimer(initialTimer);
     setNotes('');
@@ -183,25 +168,22 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
 
   // Formatta millisecondi in HH:MM:SS
   const formatElapsed = (ms) => {
-    const isNegative = ms < 0;
-    const absMs = Math.abs(ms);
-    const totalSecs = Math.floor(absMs / 1000);
+    const totalSecs = Math.floor(ms / 1000);
     const hours = Math.floor(totalSecs / 3600);
     const minutes = Math.floor((totalSecs % 3600) / 60);
     const seconds = totalSecs % 60;
 
     const pad = (num) => String(num).padStart(2, '0');
-    return `${isNegative ? '-' : ''}${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   };
 
   // Guadagno accumulato stimato
-  const estimatedEarnings = (Math.max(0, elapsedMs) / (1000 * 60 * 60)) * hourlyRate;
+  const estimatedEarnings = (elapsedMs / (1000 * 60 * 60)) * hourlyRate;
 
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px', position: 'relative' }}>
-      <CardDecor />
+    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div className="card-title">
-        <PixelClock size={18} color="var(--color-brand)" />
+        <Clock size={18} color="var(--color-brand)" />
         <span>Tracciamento in Tempo Reale</span>
       </div>
 
@@ -210,80 +192,26 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
           <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>
             Nessuna sessione attiva al momento. Avvia il timer quando inizi a lavorare.
           </p>
-          <div style={{ display: 'flex', width: '100%', maxWidth: '300px', margin: '0 auto', position: 'relative' }}>
-            <button className="btn btn-success arcade-btn" onClick={() => handleStart(0)} style={{ flex: 1, padding: '16px', borderRight: 'none' }}>
-              <PixelPlay size={20} fill="#000" />
-              Inizia Sessione
-            </button>
-            <div style={{ position: 'relative', width: '56px', flexShrink: 0 }}>
-              <button
-                className="btn btn-success arcade-btn"
-                style={{ width: '100%', height: '100%', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                onClick={() => setShowDelayMenu(v => !v)}
-                type="button"
-              >
-                <PixelClock size={20} fill="#000" />
-              </button>
-              {showDelayMenu && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: '100%',
-                  right: 0,
-                  background: 'var(--bg-secondary)',
-                  border: '3px solid var(--border-color)',
-                  boxShadow: 'var(--shadow-md)',
-                  zIndex: 200,
-                  minWidth: '160px',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}>
-                  {[{label:'Tra 1 minuto', val:1},{label:'Tra 5 minuti', val:5},{label:'Tra 10 minuti', val:10},{label:'Tra 15 minuti', val:15},{label:'Tra 30 minuti', val:30},{label:'Tra 1 ora', val:60}].map(opt => (
-                    <button
-                      key={opt.val}
-                      type="button"
-                      onClick={() => { handleStart(opt.val); setShowDelayMenu(false); }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        borderBottom: '1px solid var(--border-color)',
-                        padding: '10px 14px',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        color: 'var(--text-primary)',
-                        fontFamily: 'var(--font-heading)',
-                        fontSize: '18px',
-                        whiteSpace: 'nowrap'
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--color-brand)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          <button className="btn btn-success" onClick={handleStart} style={{ padding: '16px' }}>
+            <Play size={20} fill="white" />
+            Inizia Sessione
+          </button>
         </div>
       ) : (
         <div className="timer-container">
           <div className={`timer-circle ${!activeTimer.isPaused ? 'active' : ''}`}>
-            {/* Pixel Flower Accessory */}
-            <div style={{position: 'absolute', top: '-16px', right: '-16px', zIndex: 20}}>
-              <div className="pixel-flower"></div>
-            </div>
             <div className={`timer-display ${!activeTimer.isPaused ? 'active' : ''}`}>
               {formatElapsed(elapsedMs)}
             </div>
             <div className="timer-label">
-              {activeTimer.isScheduled ? 'Inizia tra...' : (activeTimer.isPaused ? 'In Pausa' : 'In Corso')}
+              {activeTimer.isPaused ? 'In Pausa' : 'In Corso'}
             </div>
           </div>
 
           <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
             <div className="stat-box" style={{ flex: 1, padding: '10px 14px' }}>
               <span className="stat-lbl" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <PixelMoney size={12} color="var(--color-success)" /> Stima Guadagno
+                <Coins size={12} color="var(--color-success)" /> Stima Guadagno
               </span>
               <span className="stat-val earnings" style={{ fontSize: '18px' }}>
                 €{estimatedEarnings.toFixed(2)}
@@ -301,7 +229,7 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
                     style={{ padding: '4px 6px', fontSize: '14px', width: '75px', borderRadius: '4px' }}
                   />
                   <button className="btn-icon" onClick={saveAdjustedStart} style={{ width: '28px', height: '28px', backgroundColor: 'var(--color-brand)', color: 'white' }}>
-                    <PixelCheck size={14} />
+                    <Check size={14} />
                   </button>
                 </div>
               ) : (
@@ -314,7 +242,7 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
                     style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
                     title="Modifica ora di inizio"
                   >
-                    <PixelEdit size={13} />
+                    <Edit2 size={13} />
                   </button>
                 </div>
               )}
@@ -334,24 +262,19 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
           </div>
 
           <div className="timer-controls">
-            {activeTimer.isScheduled ? (
-               <button className="btn btn-primary arcade-btn" onClick={() => setActiveTimer(prev => ({...prev, isScheduled: false, startTime: new Date().toISOString()}))} style={{ flex: 1 }}>
-                  <PixelPlay size={16} fill="white" />
-                  Avvia Ora
-               </button>
-            ) : activeTimer.isPaused ? (
-              <button className="btn btn-primary arcade-btn" onClick={handleResume} style={{ flex: 1 }}>
-                <PixelPlay size={16} fill="white" />
+            {activeTimer.isPaused ? (
+              <button className="btn btn-primary" onClick={handleResume} style={{ flex: 1 }}>
+                <Play size={16} fill="white" />
                 Riprendi
               </button>
             ) : (
-              <button className="btn btn-secondary arcade-btn" onClick={handlePause} style={{ flex: 1 }}>
-                <PixelPause size={16} />
+              <button className="btn btn-secondary" onClick={handlePause} style={{ flex: 1 }}>
+                <Pause size={16} />
                 Pausa
               </button>
             )}
-            <button className="btn btn-danger arcade-btn" onClick={handleStop} style={{ flex: 1 }}>
-              <PixelStop size={16} fill="white" />
+            <button className="btn btn-danger" onClick={handleStop} style={{ flex: 1 }}>
+              <Square size={16} fill="white" />
               Termina
             </button>
           </div>

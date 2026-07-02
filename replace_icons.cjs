@@ -56,12 +56,10 @@ function processFile(filePath) {
     imports.forEach(imp => {
       let originalName = imp;
       let localName = imp;
-      if (imp.includes(' as ')) {
+      if (imp.includes('as')) {
         const parts = imp.split(' as ');
         originalName = parts[0].trim();
-        if (parts.length > 1) {
-           localName = parts[1].trim();
-        }
+        localName = parts[1].trim();
       }
       
       const pixelName = iconMap[originalName] || 'PixelAlert';
