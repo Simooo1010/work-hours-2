@@ -36,16 +36,23 @@ export default function App() {
 
   useEffect(() => {
     const decors = [];
-    const types = ['pixel-cloud', 'pixel-cloud', 'pixel-bird', 'pixel-flower', 'pixel-grass'];
-    const numDecors = 8 + Math.floor(Math.random() * 8);
+    const types = ['pixel-cloud', 'pixel-cloud', 'pixel-bird', 'pixel-flower', 'pixel-grass', 'pixel-grass', 'pixel-cat'];
+    const numDecors = 10 + Math.floor(Math.random() * 10);
     for (let i = 0; i < numDecors; i++) {
+      const type = types[Math.floor(Math.random() * types.length)];
+      let animClass = '';
+      if (type === 'pixel-cloud' || type === 'pixel-bird' || type === 'pixel-cat') {
+         animClass = Math.random() > 0.5 ? 'anim-drift-right' : 'anim-drift-left';
+      }
       decors.push({
         id: i,
-        type: types[Math.floor(Math.random() * types.length)],
+        type: type,
+        animClass: animClass,
         top: `${Math.floor(Math.random() * 90)}%`,
-        left: `${Math.floor(Math.random() * 90)}%`,
+        left: animClass ? '-10%' : `${Math.floor(Math.random() * 90)}%`,
         scale: 0.5 + Math.random(),
-        opacity: 0.4 + Math.random() * 0.6
+        opacity: 0.6 + Math.random() * 0.4,
+        animDelay: `-${Math.floor(Math.random() * 40)}s`
       });
     }
     setDecorations(decors);
@@ -359,12 +366,13 @@ export default function App() {
       {decorations.map((decor) => (
         <div 
           key={decor.id}
-          className={`pixel-decor ${decor.type}`} 
+          className={`pixel-decor ${decor.type} ${decor.animClass}`} 
           style={{
             top: decor.top, 
             left: decor.left, 
             transform: `scale(${decor.scale})`, 
-            opacity: decor.opacity
+            opacity: decor.opacity,
+            animationDelay: decor.animDelay
           }}
         ></div>
       ))}
