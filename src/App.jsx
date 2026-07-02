@@ -7,7 +7,6 @@ import Dashboard from './components/Dashboard';
 import Analysis from './components/Analysis';
 import SessionList from './components/SessionList';
 import Settings from './components/Settings';
-import { PixelTracker, PixelAnalysis, PixelHistory, PixelConfig } from './components/PixelIcons';
 
 export default function App() {
   const [session, setSession] = useState(null);

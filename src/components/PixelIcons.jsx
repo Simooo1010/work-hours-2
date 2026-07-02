@@ -40,6 +40,8 @@ export const PixelEdit = (p) => <SvgBase {...p}><rect x="10" y="0" width="4" hei
 export const PixelChevronLeft = (p) => <SvgBase {...p}><rect x="8" y="2" width="2" height="2" /><rect x="6" y="4" width="2" height="2" /><rect x="4" y="6" width="2" height="4" /><rect x="6" y="10" width="2" height="2" /><rect x="8" y="12" width="2" height="2" /></SvgBase>;
 export const PixelChevronRight = (p) => <SvgBase {...p}><rect x="6" y="2" width="2" height="2" /><rect x="8" y="4" width="2" height="2" /><rect x="10" y="6" width="2" height="4" /><rect x="8" y="10" width="2" height="2" /><rect x="6" y="12" width="2" height="2" /></SvgBase>;
 
+export const PixelClock = (p) => <SvgBase {...p}><rect x="4" y="2" width="8" height="12" /><rect x="2" y="4" width="12" height="8" /><rect x="7" y="4" width="2" height="5" fill="white" /><rect x="7" y="7" width="4" height="2" fill="white" /></SvgBase>;
+
 // Objects / Concepts
 export const PixelMoney = (p) => <SvgBase {...p}><rect x="2" y="4" width="12" height="8" /><rect x="4" y="2" width="8" height="2" /><rect x="4" y="12" width="8" height="2" /><rect x="7" y="5" width="2" height="6" fill="white" /><rect x="6" y="6" width="4" height="2" fill="white" /><rect x="6" y="8" width="4" height="2" fill="white" /></SvgBase>;
 export const PixelTrend = (p) => <SvgBase {...p}><rect x="2" y="10" width="2" height="2" /><rect x="4" y="8" width="2" height="2" /><rect x="6" y="10" width="2" height="2" /><rect x="8" y="8" width="2" height="2" /><rect x="10" y="6" width="2" height="2" /><rect x="12" y="4" width="2" height="2" /><rect x="10" y="4" width="4" height="2" /><rect x="12" y="4" width="2" height="4" /></SvgBase>;
