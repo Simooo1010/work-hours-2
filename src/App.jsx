@@ -335,6 +335,14 @@ export default function App() {
 
   return (
     <div className="app-container">
+      {/* Background Decor */}
+      <div className="pixel-decor pixel-cloud" style={{top: '10%', left: '5%'}}></div>
+      <div className="pixel-decor pixel-cloud" style={{top: '30%', right: '10%', transform: 'scale(0.8)'}}></div>
+      <div className="pixel-decor pixel-cloud" style={{top: '60%', left: '20%', transform: 'scale(1.2)', opacity: 0.5}}></div>
+      <div className="pixel-decor pixel-bird" style={{top: '15%', right: '25%'}}></div>
+      <div className="pixel-decor pixel-bird" style={{top: '25%', left: '35%', transform: 'scale(0.7)'}}></div>
+      <div className="pixel-grass"></div>
+
       {/* Sidebar for Desktop */}
       <aside className="sidebar">
         <div className="sidebar-brand">

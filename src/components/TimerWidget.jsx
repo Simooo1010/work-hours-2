@@ -200,6 +200,10 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
       ) : (
         <div className="timer-container">
           <div className={`timer-circle ${!activeTimer.isPaused ? 'active' : ''}`}>
+            {/* Pixel Flower Accessory */}
+            <div style={{position: 'absolute', top: '-16px', right: '-16px', zIndex: 20}}>
+              <div className="pixel-flower"></div>
+            </div>
             <div className={`timer-display ${!activeTimer.isPaused ? 'active' : ''}`}>
               {formatElapsed(elapsedMs)}
             </div>
