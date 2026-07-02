@@ -101,7 +101,7 @@ h1, h2, h3, h4, h5, h6 {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-bottom: 104px; /* Space for bottom nav on mobile */
+  padding-bottom: 64px; /* Space for 64px bottom nav on mobile */
   width: 100%;
 }
 
@@ -113,74 +113,68 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
 }
 
-.mobile-nav {
-  display: grid;
-}
-/* Nav Bar (Bottom Floating Pill for Modern Aesthetics) */
+/* Nav Bar - Mobile First: full-width sticky bottom bar */
 .nav-bar {
   position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 32px);
-  max-width: 440px;
-  height: 66px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 64px;
   background: var(--bg-secondary);
-  border: 3px solid var(--border-color);
-  border-radius: var(--radius-full);
+  border-top: 3px solid var(--border-color);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  align-items: center;
-  justify-items: center;
+  align-items: stretch;
   z-index: 100;
-  box-shadow: var(--shadow-lg);
-  padding: 0 16px;
-  transition: all 0.1s steps(2, end);
-}
-
-@media (min-width: 768px) {
-  .nav-bar {
-    bottom: 24px;
-    height: 70px;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
-  }
+  box-shadow: 0 -4px 0 var(--border-color);
+  padding: 0;
 }
 
 .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  background: none;
+  justify-content: center;
+  gap: 3px;
+  background: transparent;
   border: none;
+  border-left: 2px solid transparent;
   color: var(--text-secondary);
-  font-size: 11px;
+  font-family: var(--font-heading);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   width: 100%;
   height: 100%;
-  justify-content: center;
-  transition: var(--transition-fast);
+  padding: 6px 4px;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.nav-item.active {
-  color: var(--color-brand);
+.nav-item span {
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .nav-item svg {
-  width: 22px;
-  height: 22px;
-  transition: transform var(--transition-fast);
+  width: 24px;
+  height: 24px;
+  display: block;
 }
 
-.nav-item.active svg {
-  fill: rgba(77, 96, 85, 0.1);
-  stroke: var(--color-brand);
+.nav-item.active {
+  background: var(--color-brand);
+  color: var(--bg-primary);
 }
 
-.nav-item:active svg {
-  transform: scale(0.92);
+.nav-item.active span {
+  color: var(--bg-primary);
+}
+
+.nav-item:not(.active):hover {
+  background: var(--bg-tertiary);
 }
 
 /* Common UI Elements */
@@ -857,49 +851,7 @@ input:focus, select:focus, textarea:focus {
   background: var(--bg-primary);
 }
 
-.nav-bar.mobile-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: var(--bg-secondary);
-  border-top: 3px solid var(--border-color);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 8px 12px;
-  z-index: 100;
-  box-shadow: none;
-  transform: none !important;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  background: transparent;
-  border: 2px solid transparent;
-  padding: 8px 12px;
-  color: var(--text-primary);
-  font-family: 'VT323', monospace;
-  text-transform: uppercase;
-  transition: none;
-  border-radius: 0;
-}
-
-.nav-item span {
-  font-size: 16px;
-  letter-spacing: 1px;
-}
-
-.nav-item.active {
-  background: var(--color-brand);
-  border: 2px solid var(--border-color);
-  box-shadow: 2px 2px 0px var(--border-color);
-  color: var(--bg-primary) !important;
-}
+/* Nav bar mobile-nav class - no extra overrides needed, base .nav-bar is already mobile-first */
 
 .login-card {
   width: 100%;
@@ -1137,8 +1089,8 @@ input:focus, select:focus, textarea:focus {
     display: none !important; /* Hide top header since branding is in sidebar */
   }
 
-  .mobile-nav {
-    display: none !important; /* Hide floating pill nav */
+  .nav-bar {
+    display: none !important; /* Hide bottom nav on desktop - sidebar takes over */
   }
 
   .view-content {
@@ -1336,19 +1288,18 @@ input:focus, select:focus, textarea:focus {
 /* RESPONSIVE MOBILE FIXES */
 @media (max-width: 480px) {
   .view-content {
-    padding: 16px;
-    gap: 16px;
-  }
-  .card {
-    padding: 16px;
-    border-radius: 20px;
-  }
-  .stats-grid {
+    padding: 12px;
     gap: 12px;
   }
-  .stat-box {
+  .card {
     padding: 14px;
-    border-radius: 12px;
+    border-radius: var(--radius-sm); /* Keep retro 0px radius */
+  }
+  .stats-grid {
+    gap: 10px;
+  }
+  .stat-box {
+    padding: 12px;
   }
   input, select, textarea {
     padding: 10px 12px;
@@ -1554,8 +1505,8 @@ body {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect x="7" y="10" width="2" height="6" fill="%2339FF14"/><rect x="5" y="6" width="6" height="4" fill="%23FF00FF"/><rect x="7" y="4" width="2" height="2" fill="%23FF00FF"/><rect x="7" y="7" width="2" height="2" fill="%23FFEA00"/></svg>');
 }
 
-/* Stack form rows on small mobile devices to prevent overflow */
-@media (max-width: 480px) {
+/* Stack form rows on mobile devices to prevent overflow */
+@media (max-width: 767px) {
   .form-row {
     grid-template-columns: 1fr !important;
     gap: 6px !important;
