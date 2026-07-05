@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, Square, Edit2, Clock, Coins, Check, AlertCircle } from 'lucide-react';
+import { Play, Pause, Square, Edit2, Clock, Coins, Check, AlertCircle, X } from 'lucide-react';
 
 export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer }) {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isEditingStart, setIsEditingStart] = useState(false);
   const [editStartTimeVal, setEditStartTimeVal] = useState('');
   const [notes, setNotes] = useState('');
+  const [isIOSDevice, setIsIOSDevice] = useState(false);
+  const [showDelayedModal, setShowDelayedModal] = useState(false);
+  const [delayedMinutes, setDelayedMinutes] = useState(10);
+  const [delayError, setDelayError] = useState('');
+
+  useEffect(() => {
+    const checkIOS = () => {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    };
+    setIsIOSDevice(checkIOS());
+  }, []);
 
   // Aggiorna il contatore del timer ogni secondo
   useEffect(() => {
@@ -49,6 +61,23 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
     setIsEditingStart(false);
   };
 
+  // Avvia il timer in modo programmato (ritardato di X minuti)
+  const handleStartDelayed = (minutes) => {
+    const now = new Date();
+    const futureStart = new Date(now.getTime() + minutes * 60 * 1000);
+    const todayStr = now.toISOString().split('T')[0];
+    const initialTimer = {
+      startTime: futureStart.toISOString(),
+      isPaused: false,
+      pausedDurationMs: 0,
+      lastPauseTime: null,
+      date: todayStr,
+    };
+    setActiveTimer(initialTimer);
+    setNotes('');
+    setIsEditingStart(false);
+  };
+
   // Metti in pausa il timer
   const handlePause = () => {
     if (!activeTimer || activeTimer.isPaused) return;
@@ -79,6 +108,14 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
   // Ferma e salva il timer
   const handleStop = () => {
     if (!activeTimer) return;
+
+    // Se il timer non è ancora iniziato (avvio programmato)
+    if (elapsedMs < 0) {
+      if (confirm('Vuoi annullare l\'avvio programmato del timer?')) {
+        setActiveTimer(null);
+      }
+      return;
+    }
 
     const durationHours = elapsedMs / (1000 * 60 * 60);
     
@@ -166,19 +203,21 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
     setIsEditingStart(false);
   };
 
-  // Formatta millisecondi in HH:MM:SS
+  // Formatta millisecondi in HH:MM:SS (con supporto per countdown negativi)
   const formatElapsed = (ms) => {
-    const totalSecs = Math.floor(ms / 1000);
+    const isNegative = ms < 0;
+    const absMs = Math.abs(ms);
+    const totalSecs = Math.floor(absMs / 1000);
     const hours = Math.floor(totalSecs / 3600);
     const minutes = Math.floor((totalSecs % 3600) / 60);
     const seconds = totalSecs % 60;
 
     const pad = (num) => String(num).padStart(2, '0');
-    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    return `${isNegative ? '-' : ''}${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   };
 
-  // Guadagno accumulato stimato
-  const estimatedEarnings = (elapsedMs / (1000 * 60 * 60)) * hourlyRate;
+  // Guadagno accumulato stimato (evita valori inferiori a zero durante il countdown)
+  const estimatedEarnings = Math.max(0, (elapsedMs / (1000 * 60 * 60)) * hourlyRate);
 
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -192,10 +231,51 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
           <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>
             Nessuna sessione attiva al momento. Avvia il timer quando inizi a lavorare.
           </p>
-          <button className="btn btn-success" onClick={handleStart} style={{ padding: '16px' }}>
-            <Play size={20} fill="white" />
-            Inizia Sessione
-          </button>
+          <div className="btn-split-container">
+            <div 
+              className="btn-split-left"
+              onClick={!isIOSDevice ? () => { setShowDelayedModal(true); setDelayError(''); } : undefined}
+              title="Programma avvio sessione"
+            >
+              <Clock size={20} color="white" />
+              
+              {isIOSDevice && (
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    if (val >= 1 && val <= 100) {
+                      handleStartDelayed(val);
+                    }
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    opacity: 0,
+                    cursor: 'pointer',
+                    WebkitAppearance: 'menulist-button',
+                  }}
+                >
+                  <option value="" disabled>Avvia tra...</option>
+                  {Array.from({ length: 100 }, (_, i) => i + 1).map((num) => (
+                    <option key={num} value={num}>
+                      {num} {num === 1 ? 'minuto' : 'minuti'}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+            <button 
+              className="btn-split-right"
+              onClick={handleStart}
+            >
+              <Play size={20} fill="white" color="white" />
+              Inizia Sessione
+            </button>
+          </div>
         </div>
       ) : (
         <div className="timer-container">
@@ -203,8 +283,8 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
             <div className={`timer-display ${!activeTimer.isPaused ? 'active' : ''}`}>
               {formatElapsed(elapsedMs)}
             </div>
-            <div className="timer-label">
-              {activeTimer.isPaused ? 'In Pausa' : 'In Corso'}
+             <div className="timer-label">
+              {elapsedMs < 0 ? 'Avvio programmato' : (activeTimer.isPaused ? 'In Pausa' : 'In Corso')}
             </div>
           </div>
 
@@ -262,21 +342,107 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
           </div>
 
           <div className="timer-controls">
-            {activeTimer.isPaused ? (
-              <button className="btn btn-primary" onClick={handleResume} style={{ flex: 1 }}>
-                <Play size={16} fill="white" />
-                Riprendi
+            {elapsedMs < 0 ? (
+              <button className="btn btn-danger" onClick={handleStop} style={{ flex: 1 }}>
+                <Square size={16} fill="white" />
+                Annulla Avvio
               </button>
             ) : (
-              <button className="btn btn-secondary" onClick={handlePause} style={{ flex: 1 }}>
-                <Pause size={16} />
-                Pausa
-              </button>
+              <>
+                {activeTimer.isPaused ? (
+                  <button className="btn btn-primary" onClick={handleResume} style={{ flex: 1 }}>
+                    <Play size={16} fill="white" />
+                    Riprendi
+                  </button>
+                ) : (
+                  <button className="btn btn-secondary" onClick={handlePause} style={{ flex: 1 }}>
+                    <Pause size={16} />
+                    Pausa
+                  </button>
+                )}
+                <button className="btn btn-danger" onClick={handleStop} style={{ flex: 1 }}>
+                  <Square size={16} fill="white" />
+                  Termina
+                </button>
+              </>
             )}
-            <button className="btn btn-danger" onClick={handleStop} style={{ flex: 1 }}>
-              <Square size={16} fill="white" />
-              Termina
-            </button>
+          </div>
+        </div>
+      )}
+
+      {showDelayedModal && (
+        <div className="modal-overlay" style={{ zIndex: 1000 }}>
+          <div className="modal-content" style={{ maxWidth: '340px', padding: '24px' }}>
+            <div className="modal-header" style={{ marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)' }}>
+                <Clock size={20} color="var(--color-brand)" />
+                Avvio Temporizzato
+              </h3>
+              <button 
+                onClick={() => { setShowDelayedModal(false); setDelayError(''); }} 
+                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '18px', lineHeight: '1.4' }}>
+              Imposta il timer affinché parta automaticamente dopo i minuti selezionati.
+            </p>
+            
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+              <label htmlFor="delayed-minutes-input" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-primary)' }}>
+                Minuti di attesa (da 1 a 100)
+              </label>
+              <input
+                id="delayed-minutes-input"
+                type="number"
+                min="1"
+                max="100"
+                value={delayedMinutes}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setDelayedMinutes(val);
+                  const parsed = parseInt(val, 10);
+                  if (val && (isNaN(parsed) || parsed < 1 || parsed > 100)) {
+                    setDelayError('Inserisci un numero intero compreso tra 1 e 100.');
+                  } else {
+                    setDelayError('');
+                  }
+                }}
+                placeholder="Es. 10"
+                style={{ width: '100%', padding: '10px', fontSize: '15px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', outline: 'none' }}
+              />
+              <small style={{ display: 'block', marginTop: '6px', color: delayError ? 'var(--color-danger)' : 'var(--text-secondary)', fontSize: '12px' }}>
+                {delayError || 'L\'intervallo consentito va da 1 a 100 minuti.'}
+              </small>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => { setShowDelayedModal(false); setDelayError(''); }} 
+                style={{ flex: 1, height: '40px', padding: '0 12px', fontSize: '14px' }}
+              >
+                Annulla
+              </button>
+              <button 
+                className="btn btn-primary" 
+                onClick={() => {
+                  const val = parseInt(delayedMinutes, 10);
+                  if (isNaN(val) || val < 1 || val > 100) {
+                    setDelayError('Inserisci un numero valido compreso tra 1 e 100.');
+                    return;
+                  }
+                  handleStartDelayed(val);
+                  setShowDelayedModal(false);
+                }}
+                disabled={!!delayError || !delayedMinutes}
+                style={{ flex: 1, height: '40px', padding: '0 12px', fontSize: '14px' }}
+              >
+                Avvia
+              </button>
+            </div>
           </div>
         </div>
       )}

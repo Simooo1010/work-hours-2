@@ -254,15 +254,17 @@ export default function App() {
     }
   };
 
-  // Formatta millisecondi del mini-timer in HH:MM:SS
+  // Formatta millisecondi del mini-timer in HH:MM:SS (supporta countdown negativi)
   const formatMiniElapsed = (ms) => {
-    const totalSecs = Math.floor(ms / 1000);
+    const isNegative = ms < 0;
+    const absMs = Math.abs(ms);
+    const totalSecs = Math.floor(absMs / 1000);
     const hours = Math.floor(totalSecs / 3600);
     const minutes = Math.floor((totalSecs % 3600) / 60);
     const seconds = totalSecs % 60;
 
     const pad = (num) => String(num).padStart(2, '0');
-    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    return `${isNegative ? '-' : ''}${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   };
 
   // Renderizza la vista corrente
@@ -384,14 +386,26 @@ export default function App() {
           <div style={{ padding: '16px 20px 0 20px' }}>
             <div className="mini-timer-banner" onClick={() => setActiveView('dashboard')}>
               <div className="mini-timer-info">
-                <div className="mini-timer-pulse"></div>
+                <div 
+                  className="mini-timer-pulse" 
+                  style={{ backgroundColor: miniElapsedMs < 0 ? '#d97706' : 'var(--color-brand)' }}
+                ></div>
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>Sessione in corso</div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                    {miniElapsedMs < 0 ? 'Avvio programmato' : 'Sessione in corso'}
+                  </div>
                   <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Note: {activeTimer.notes || 'Nessuna'}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: '700', fontSize: '18px', color: 'var(--color-brand)' }}>
+                <span 
+                  style={{ 
+                    fontFamily: 'var(--font-heading)', 
+                    fontWeight: '700', 
+                    fontSize: '18px', 
+                    color: miniElapsedMs < 0 ? '#d97706' : 'var(--color-brand)' 
+                  }}
+                >
                   {formatMiniElapsed(miniElapsedMs)}
                 </span>
               </div>

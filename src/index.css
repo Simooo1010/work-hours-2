@@ -372,9 +372,74 @@ input:focus, select:focus, textarea:focus {
   transition: var(--transition-fast);
 }
 
+
 .btn-icon:hover {
   color: var(--text-primary);
   background: var(--bg-tertiary-hover);
+}
+
+/* Split button styling */
+.btn-split-container {
+  display: flex;
+  width: 100%;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-brand);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-fast);
+}
+
+.btn-split-container:hover {
+  background: var(--color-brand-hover);
+}
+
+.btn-split-container:active {
+  transform: scale(0.99);
+}
+
+.btn-split-left {
+  position: relative;
+  width: 56px;
+  height: 100%;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  transition: background 0.2s;
+  padding: 0;
+  color: white;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+}
+
+.btn-split-left:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-split-right {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0 16px;
+  transition: background 0.2s;
+}
+
+.btn-split-right:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Timer styles - Organic & Tactile */
