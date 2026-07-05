@@ -398,29 +398,7 @@ input:focus, select:focus, textarea:focus {
   transform: scale(0.99);
 }
 
-.btn-split-left {
-  position: relative;
-  width: 56px;
-  height: 100%;
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  background: transparent;
-  transition: background 0.2s;
-  padding: 0;
-  color: white;
-  border-top: none;
-  border-bottom: none;
-  border-left: none;
-}
-
-.btn-split-left:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.btn-split-right {
+.btn-split-main {
   flex: 1;
   height: 100%;
   background: transparent;
@@ -438,7 +416,29 @@ input:focus, select:focus, textarea:focus {
   transition: background 0.2s;
 }
 
-.btn-split-right:hover {
+.btn-split-main:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-split-timer {
+  position: relative;
+  width: 56px;
+  height: 100%;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  transition: background 0.2s;
+  padding: 0;
+  color: white;
+  border-top: none;
+  border-bottom: none;
+  border-right: none;
+}
+
+.btn-split-timer:hover {
   background: rgba(255, 255, 255, 0.15);
 }
 

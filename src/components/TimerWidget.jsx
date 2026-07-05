@@ -232,8 +232,15 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
             Nessuna sessione attiva al momento. Avvia il timer quando inizi a lavorare.
           </p>
           <div className="btn-split-container">
+            <button 
+              className="btn-split-main"
+              onClick={handleStart}
+            >
+              <Play size={20} fill="white" color="white" />
+              Inizia Sessione
+            </button>
             <div 
-              className="btn-split-left"
+              className="btn-split-timer"
               onClick={!isIOSDevice ? () => { setShowDelayedModal(true); setDelayError(''); } : undefined}
               title="Programma avvio sessione"
             >
@@ -268,13 +275,6 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
                 </select>
               )}
             </div>
-            <button 
-              className="btn-split-right"
-              onClick={handleStart}
-            >
-              <Play size={20} fill="white" color="white" />
-              Inizia Sessione
-            </button>
           </div>
         </div>
       ) : (
