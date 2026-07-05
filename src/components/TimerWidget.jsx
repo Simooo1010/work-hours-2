@@ -1,23 +1,101 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, Square, Edit2, Clock, Coins, Check, AlertCircle, X } from 'lucide-react';
 
+const numbers = Array.from({ length: 100 }, (_, i) => i + 1);
+
+function WheelPicker({ value, onChange }) {
+  const containerRef = React.useRef(null);
+  const itemHeight = 36; // px
+
+  React.useEffect(() => {
+    if (containerRef.current) {
+      const targetScroll = (value - 1) * itemHeight;
+      if (Math.abs(containerRef.current.scrollTop - targetScroll) > 2) {
+        containerRef.current.scrollTop = targetScroll;
+      }
+    }
+  }, [value]);
+
+  const handleScroll = (e) => {
+    const scrollTop = e.target.scrollTop;
+    const index = Math.round(scrollTop / itemHeight);
+    const newValue = Math.min(100, Math.max(1, index + 1));
+    if (newValue !== value) {
+      onChange(newValue);
+    }
+  };
+
+  return (
+    <div style={{ position: 'relative', width: '100px', height: '180px', margin: '0 auto', userSelect: 'none' }}>
+      <div style={{
+        position: 'absolute',
+        top: '72px',
+        left: 0,
+        width: '100%',
+        height: '36px',
+        borderTop: '1px solid var(--border-color)',
+        borderBottom: '1px solid var(--border-color)',
+        pointerEvents: 'none',
+        background: 'rgba(77, 96, 85, 0.05)',
+      }} />
+      <div 
+        ref={containerRef}
+        onScroll={handleScroll}
+        style={{
+          height: '180px',
+          overflowY: 'scroll',
+          scrollSnapType: 'y mandatory',
+          paddingTop: '72px',
+          paddingBottom: '72px',
+          boxSizing: 'border-box',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
+        className="wheel-picker-scroll"
+      >
+        {numbers.map((num) => {
+          const isSelected = num === value;
+          return (
+            <div
+              key={num}
+              style={{
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                scrollSnapAlign: 'center',
+                fontSize: isSelected ? '22px' : '15px',
+                fontWeight: isSelected ? '700' : '400',
+                color: isSelected ? 'var(--color-brand)' : 'var(--text-secondary)',
+                transition: 'font-size 0.15s, color 0.15s, font-weight 0.15s',
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                if (containerRef.current) {
+                  containerRef.current.scrollTo({
+                    top: (num - 1) * itemHeight,
+                    behavior: 'smooth'
+                  });
+                }
+              }}
+            >
+              {num}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer }) {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isEditingStart, setIsEditingStart] = useState(false);
   const [editStartTimeVal, setEditStartTimeVal] = useState('');
   const [notes, setNotes] = useState('');
-  const [isIOSDevice, setIsIOSDevice] = useState(false);
   const [showDelayedModal, setShowDelayedModal] = useState(false);
   const [delayedMinutes, setDelayedMinutes] = useState(10);
   const [delayError, setDelayError] = useState('');
-
-  useEffect(() => {
-    const checkIOS = () => {
-      return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    };
-    setIsIOSDevice(checkIOS());
-  }, []);
 
   // Aggiorna il contatore del timer ogni secondo
   useEffect(() => {
@@ -241,39 +319,10 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
             </button>
             <div 
               className="btn-split-timer"
-              onClick={!isIOSDevice ? () => { setShowDelayedModal(true); setDelayError(''); } : undefined}
+              onClick={() => { setShowDelayedModal(true); setDelayError(''); }}
               title="Programma avvio sessione"
             >
               <Clock size={20} color="white" />
-              
-              {isIOSDevice && (
-                <select
-                  value=""
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value, 10);
-                    if (val >= 1 && val <= 100) {
-                      handleStartDelayed(val);
-                    }
-                  }}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    opacity: 0,
-                    cursor: 'pointer',
-                    WebkitAppearance: 'menulist-button',
-                  }}
-                >
-                  <option value="" disabled>Avvia tra...</option>
-                  {Array.from({ length: 100 }, (_, i) => i + 1).map((num) => (
-                    <option key={num} value={num}>
-                      {num} {num === 1 ? 'minuto' : 'minuti'}
-                    </option>
-                  ))}
-                </select>
-              )}
             </div>
           </div>
         </div>
@@ -387,12 +436,29 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
             </div>
             
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '18px', lineHeight: '1.4' }}>
-              Imposta il timer affinché parta automaticamente dopo i minuti selezionati.
+              Trascina la rotella o seleziona un valore per programmare la partenza automatica della sessione.
             </p>
+
+            {/* Rotella per i numeri (Wheel Picker stile iOS) */}
+            <div style={{ 
+              background: 'var(--bg-secondary)', 
+              borderRadius: 'var(--radius-sm)', 
+              padding: '16px 0', 
+              border: '1px solid var(--border-color)',
+              marginBottom: '20px'
+            }}>
+              <WheelPicker 
+                value={parseInt(delayedMinutes, 10) || 1} 
+                onChange={(val) => {
+                  setDelayedMinutes(val);
+                  setDelayError('');
+                }}
+              />
+            </div>
             
             <div className="form-group" style={{ marginBottom: '20px' }}>
               <label htmlFor="delayed-minutes-input" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-primary)' }}>
-                Minuti di attesa (da 1 a 100)
+                Oppure inserisci manualmente (da 1 a 100)
               </label>
               <input
                 id="delayed-minutes-input"

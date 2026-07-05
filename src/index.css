@@ -1427,3 +1427,14 @@ input:focus, select:focus, textarea:focus {
     color: var(--text-secondary);
   }
 }
+
+/* Wheel Picker styling */
+.wheel-picker-scroll {
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar IE/Edge */
+}
+
+.wheel-picker-scroll::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Safari/Chrome */
+}
+
