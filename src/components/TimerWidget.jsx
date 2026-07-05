@@ -93,9 +93,18 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
   const [isEditingStart, setIsEditingStart] = useState(false);
   const [editStartTimeVal, setEditStartTimeVal] = useState('');
   const [notes, setNotes] = useState('');
+  const [isIOSDevice, setIsIOSDevice] = useState(false);
   const [showDelayedModal, setShowDelayedModal] = useState(false);
   const [delayedMinutes, setDelayedMinutes] = useState(10);
   const [delayError, setDelayError] = useState('');
+
+  useEffect(() => {
+    const checkIOS = () => {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    };
+    setIsIOSDevice(checkIOS());
+  }, []);
 
   // Aggiorna il contatore del timer ogni secondo
   useEffect(() => {
@@ -154,6 +163,28 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
     setActiveTimer(initialTimer);
     setNotes('');
     setIsEditingStart(false);
+  };
+
+  // Gestisce la selezione del tempo tramite input nativo iOS time (scroller a rotella)
+  const handleTimeInputChange = (e) => {
+    const val = e.target.value;
+    if (!val) return;
+    
+    const [hours, minutes] = val.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes;
+    
+    if (totalMinutes < 1) {
+      alert("Seleziona una durata maggiore di 0 minuti.");
+      return;
+    }
+    
+    if (totalMinutes > 100) {
+      alert("Il tempo massimo programmabile è di 100 minuti (1 ora e 40 minuti).");
+      return;
+    }
+    
+    handleStartDelayed(totalMinutes);
+    e.target.value = '';
   };
 
   // Metti in pausa il timer
@@ -319,10 +350,26 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
             </button>
             <div 
               className="btn-split-timer"
-              onClick={() => { setShowDelayedModal(true); setDelayError(''); }}
+              onClick={!isIOSDevice ? () => { setShowDelayedModal(true); setDelayError(''); } : undefined}
               title="Programma avvio sessione"
             >
               <Clock size={20} color="white" />
+              {isIOSDevice && (
+                <input
+                  type="time"
+                  onChange={handleTimeInputChange}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    opacity: 0,
+                    cursor: 'pointer',
+                    WebkitAppearance: 'none',
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>
