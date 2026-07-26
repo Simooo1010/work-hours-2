@@ -11,10 +11,14 @@ const MONTHS_IT = [
 const WEEKDAYS_IT = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
 const getMonday = (dateStr) => {
-  const d = new Date(dateStr);
+  const parts = String(dateStr).split('-');
+  const d = parts.length === 3 
+    ? new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+    : new Date(dateStr);
   const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(d.setDate(diff));
+  const monday = new Date(d);
+  monday.setDate(diff);
   monday.setHours(0, 0, 0, 0);
   return monday;
 };
@@ -492,29 +496,54 @@ export default function Analysis({ sessions, hourlyRate }) {
               </select>
             ) : exportType === 'week' ? (
               <select 
-                value={selectedExportWeeks.length === 1 ? selectedExportWeeks[0] : ''} 
+                value={(() => {
+                  const isAllSelected = selectedExportWeeks.length === uniqueWeeks.length && uniqueWeeks.length > 0;
+                  const isLast2Selected = uniqueWeeks.length >= 2 && selectedExportWeeks.length === 2 && selectedExportWeeks.every((w, i) => w === uniqueWeeks[i]);
+                  const isLast4Selected = uniqueWeeks.length >= 4 && selectedExportWeeks.length === 4 && selectedExportWeeks.every((w, i) => w === uniqueWeeks[i]);
+                  if (selectedExportWeeks.length === 1) return selectedExportWeeks[0];
+                  if (isAllSelected) return 'all';
+                  if (isLast2Selected) return 'last2';
+                  if (isLast4Selected) return 'last4';
+                  if (selectedExportWeeks.length === 0) return '';
+                  return 'custom_weeks';
+                })()} 
                 onChange={(e) => {
-                  if (e.target.value) {
-                    setSelectedExportWeeks([e.target.value]);
+                  const val = e.target.value;
+                  if (val === 'all') {
+                    setSelectedExportWeeks([...uniqueWeeks]);
+                  } else if (val === 'last2') {
+                    setSelectedExportWeeks(uniqueWeeks.slice(0, 2));
+                  } else if (val === 'last4') {
+                    setSelectedExportWeeks(uniqueWeeks.slice(0, 4));
+                  } else if (val && val !== 'custom_weeks') {
+                    setSelectedExportWeeks([val]);
                   }
                 }}
                 style={{ borderRadius: '8px', padding: '10px' }}
               >
-                {selectedExportWeeks.length > 1 && (
-                  <option value="">{selectedExportWeeks.length} settimane selezionate (modifica sotto)</option>
+                {selectedExportWeeks.length > 1 && 
+                 selectedExportWeeks.length !== uniqueWeeks.length && 
+                 !(uniqueWeeks.length >= 2 && selectedExportWeeks.length === 2 && selectedExportWeeks.every((w, i) => w === uniqueWeeks[i])) &&
+                 !(uniqueWeeks.length >= 4 && selectedExportWeeks.length === 4 && selectedExportWeeks.every((w, i) => w === uniqueWeeks[i])) && (
+                  <option value="custom_weeks">{selectedExportWeeks.length} settimane selezionate (modifica sotto)</option>
                 )}
                 {selectedExportWeeks.length === 0 && (
                   <option value="">Nessuna settimana selezionata</option>
                 )}
-                {uniqueWeeks.map(w => {
-                  const mon = new Date(w);
-                  const sun = new Date(mon);
-                  sun.setDate(mon.getDate() + 6);
-                  const fDay = (d) => `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')}`;
-                  return (
-                    <option key={w} value={w}>Settimana {fDay(mon)} - {fDay(sun)}</option>
-                  );
-                })}
+                <option value="all">Tutte le settimane ({uniqueWeeks.length})</option>
+                {uniqueWeeks.length >= 2 && <option value="last2">Ultime 2 settimane</option>}
+                {uniqueWeeks.length >= 4 && <option value="last4">Ultime 4 settimane</option>}
+                <optgroup label="Singole Settimane">
+                  {uniqueWeeks.map(w => {
+                    const mon = new Date(w);
+                    const sun = new Date(mon);
+                    sun.setDate(mon.getDate() + 6);
+                    const fDay = (d) => `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')}`;
+                    return (
+                      <option key={w} value={w}>Settimana {fDay(mon)} - {fDay(sun)}</option>
+                    );
+                  })}
+                </optgroup>
               </select>
             ) : (
               <select 
@@ -698,6 +727,30 @@ export default function Analysis({ sessions, hourlyRate }) {
         {exportSessions.length > 0 ? (
           <div className="export-panel" style={{ border: 'none', paddingTop: '0', marginTop: '8px' }}>
             <div className="print-document-screen" style={{ border: '1px solid var(--border-color)', borderRadius: '12px', padding: '20px' }}>
+              <div style={{ marginBottom: '16px', borderBottom: '2px solid var(--color-brand)', paddingBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>Riepilogo Ore Lavorative</h3>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                    {exportType === 'month' && `Periodo Mensile: ${formattedMonthLabel(exportPeriod)}`}
+                    {exportType === 'week' && (
+                      selectedExportWeeks.length === 1 
+                        ? `Periodo: Settimana (${(() => {
+                            const mon = new Date(selectedExportWeeks[0]);
+                            const sun = new Date(mon);
+                            sun.setDate(mon.getDate() + 6);
+                            const fDay = (d) => `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')}`;
+                            return `${fDay(mon)} - ${fDay(sun)}`;
+                          })()})`
+                        : `Periodo: ${selectedExportWeeks.length} settimane selezionate`
+                    )}
+                    {exportType === 'custom' && `Periodo: Selezione Personalizzata (${exportSessions.length} sessioni)`}
+                  </div>
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                  {exportSessions.length} sessioni incluse
+                </div>
+              </div>
+
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
@@ -746,6 +799,30 @@ export default function Analysis({ sessions, hourlyRate }) {
 
       {/* DOCUMENTO DI STAMPA A4 INVISIBILE A SCHERMO (stampa solo tabella e totali) */}
       <div className="print-document" style={{ display: 'none', color: '#000000', fontSize: '11pt', padding: '10px' }}>
+        <div style={{ borderBottom: '2px solid #000000', paddingBottom: '10px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '18pt', fontWeight: 'bold' }}>Riepilogo Ore Lavorative</h1>
+            <div style={{ fontSize: '11pt', marginTop: '4px', color: '#333333' }}>
+              {exportType === 'month' && `Periodo: ${formattedMonthLabel(exportPeriod)}`}
+              {exportType === 'week' && (
+                selectedExportWeeks.length === 1
+                  ? `Periodo: Settimana (${(() => {
+                      const mon = new Date(selectedExportWeeks[0]);
+                      const sun = new Date(mon);
+                      sun.setDate(mon.getDate() + 6);
+                      const fDay = (d) => `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')}`;
+                      return `${fDay(mon)} - ${fDay(sun)}`;
+                    })()})`
+                  : `Periodo: Settimanale (${selectedExportWeeks.length} settimane)`
+              )}
+              {exportType === 'custom' && `Periodo: Personalizzato (${exportSessions.length} sessioni)`}
+            </div>
+          </div>
+          <div style={{ fontSize: '10pt', color: '#555555' }}>
+            Data report: {new Date().toLocaleDateString('it-IT')}
+          </div>
+        </div>
+
         <table className="print-table" style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
           <thead>
             <tr style={{ background: '#f5f5f5' }}>
