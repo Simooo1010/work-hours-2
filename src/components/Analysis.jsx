@@ -209,13 +209,19 @@ export default function Analysis({ sessions, hourlyRate }) {
   const [exportType, setExportType] = useState('month'); // 'month' | 'week' | 'custom'
   const [exportPeriod, setExportPeriod] = useState(() => uniqueMonths[0]);
   const [customSelectedIds, setCustomSelectedIds] = useState([]);
+  const [selectedExportWeeks, setSelectedExportWeeks] = useState(() => uniqueWeeks.length > 0 ? [uniqueWeeks[0]] : []);
 
   // Sincronizza il periodo quando cambia il tipo di export
   React.useEffect(() => {
     if (exportType === 'month') {
       setExportPeriod(uniqueMonths[0]);
     } else if (exportType === 'week') {
-      setExportPeriod(uniqueWeeks[0]);
+      setSelectedExportWeeks(prev => {
+        if (prev.length === 0 || !prev.every(w => uniqueWeeks.includes(w))) {
+          return uniqueWeeks.length > 0 ? [uniqueWeeks[0]] : [];
+        }
+        return prev;
+      });
     }
   }, [exportType, uniqueMonths, uniqueWeeks]);
 
@@ -250,6 +256,22 @@ export default function Analysis({ sessions, hourlyRate }) {
     setCustomSelectedIds([]);
   };
 
+  const handleToggleExportWeek = (weekStr) => {
+    setSelectedExportWeeks(prev =>
+      prev.includes(weekStr)
+        ? prev.filter(w => w !== weekStr)
+        : [...prev, weekStr]
+    );
+  };
+
+  const handleSelectAllWeeks = () => {
+    setSelectedExportWeeks([...uniqueWeeks]);
+  };
+
+  const handleDeselectAllWeeks = () => {
+    setSelectedExportWeeks([]);
+  };
+
   // Filtra e prepara le sessioni per l'esportazione (SEMPRE CON ARROTONDAMENTO APPLICATO)
   const exportSessions = useMemo(() => {
     if (exportType === 'custom') {
@@ -258,28 +280,22 @@ export default function Analysis({ sessions, hourlyRate }) {
         .sort((a, b) => a.date.localeCompare(b.date));
     }
 
-    if (!exportPeriod) return [];
-    
     if (exportType === 'month') {
+      if (!exportPeriod) return [];
       return sessions
         .filter(s => s.date.substring(0, 7) === exportPeriod)
         .sort((a, b) => a.date.localeCompare(b.date));
     } else {
-      const mon = new Date(exportPeriod);
-      const sun = new Date(mon);
-      sun.setDate(mon.getDate() + 6);
-      
-      const monTime = mon.getTime();
-      const sunTime = sun.getTime() + 86400000; // Includi tutta la domenica
-      
+      // exportType === 'week'
+      if (selectedExportWeeks.length === 0) return [];
       return sessions
         .filter(s => {
-          const t = new Date(s.date).getTime();
-          return t >= monTime && t < sunTime;
+          const sessionMonStr = formatDateStr(getMonday(s.date));
+          return selectedExportWeeks.includes(sessionMonStr);
         })
         .sort((a, b) => a.date.localeCompare(b.date));
     }
-  }, [sessions, exportType, exportPeriod, customSelectedIds]);
+  }, [sessions, exportType, exportPeriod, customSelectedIds, selectedExportWeeks]);
 
   // Calcola i totali per l'esportazione (CON ARROTONDAMENTO)
   const exportTotals = useMemo(() => {
@@ -474,31 +490,130 @@ export default function Analysis({ sessions, hourlyRate }) {
               <select disabled style={{ borderRadius: '8px', padding: '10px', opacity: 0.6, cursor: 'not-allowed' }}>
                 <option>Selezione Libera (Sotto)</option>
               </select>
+            ) : exportType === 'week' ? (
+              <select 
+                value={selectedExportWeeks.length === 1 ? selectedExportWeeks[0] : ''} 
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setSelectedExportWeeks([e.target.value]);
+                  }
+                }}
+                style={{ borderRadius: '8px', padding: '10px' }}
+              >
+                {selectedExportWeeks.length > 1 && (
+                  <option value="">{selectedExportWeeks.length} settimane selezionate (modifica sotto)</option>
+                )}
+                {selectedExportWeeks.length === 0 && (
+                  <option value="">Nessuna settimana selezionata</option>
+                )}
+                {uniqueWeeks.map(w => {
+                  const mon = new Date(w);
+                  const sun = new Date(mon);
+                  sun.setDate(mon.getDate() + 6);
+                  const fDay = (d) => `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')}`;
+                  return (
+                    <option key={w} value={w}>Settimana {fDay(mon)} - {fDay(sun)}</option>
+                  );
+                })}
+              </select>
             ) : (
               <select 
                 value={exportPeriod} 
                 onChange={(e) => setExportPeriod(e.target.value)}
                 style={{ borderRadius: '8px', padding: '10px' }}
               >
-                {exportType === 'month' ? (
-                  uniqueMonths.map(ym => (
-                    <option key={ym} value={ym}>{formattedMonthLabel(ym)}</option>
-                  ))
-                ) : (
-                  uniqueWeeks.map(w => {
-                    const mon = new Date(w);
-                    const sun = new Date(mon);
-                    sun.setDate(mon.getDate() + 6);
-                    const fDay = (d) => `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')}`;
-                    return (
-                      <option key={w} value={w}>Settimana {fDay(mon)} - {fDay(sun)}</option>
-                    );
-                  })
-                )}
+                {uniqueMonths.map(ym => (
+                  <option key={ym} value={ym}>{formattedMonthLabel(ym)}</option>
+                ))}
               </select>
             )}
           </div>
         </div>
+
+        {exportType === 'week' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '14px', marginTop: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <span style={{ fontSize: '12.5px', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
+                Seleziona Settimane ({selectedExportWeeks.length}/{uniqueWeeks.length})
+              </span>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  type="button"
+                  style={{ background: 'none', border: 'none', color: 'var(--color-brand)', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', padding: '0' }}
+                  onClick={handleSelectAllWeeks}
+                >
+                  Seleziona Tutte
+                </button>
+                <span style={{ color: 'var(--border-color)', fontSize: '11px' }}>|</span>
+                <button 
+                  type="button"
+                  style={{ background: 'none', border: 'none', color: 'var(--color-brand)', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', padding: '0' }}
+                  onClick={handleDeselectAllWeeks}
+                >
+                  Deseleziona Tutte
+                </button>
+              </div>
+            </div>
+            
+            <div className="custom-sessions-list" style={{ 
+              maxHeight: '180px', 
+              overflowY: 'auto', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '6px',
+              paddingRight: '4px'
+            }}>
+              {uniqueWeeks.length === 0 ? (
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px 0' }}>
+                  Nessuna settimana registrata.
+                </div>
+              ) : (
+                uniqueWeeks.map(w => {
+                  const isChecked = selectedExportWeeks.includes(w);
+                  const mon = new Date(w);
+                  const sun = new Date(mon);
+                  sun.setDate(mon.getDate() + 6);
+                  const fDay = (d) => `${String(d.getDate()).padStart(2, '0')} ${d.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')}`;
+                  
+                  const weekData = weeklyData[w];
+                  const hoursStr = weekData ? `${weekData.hours.toFixed(1)}h` : '0h';
+                  const countStr = weekData ? `${weekData.sessions.length} sessioni` : '0 sessioni';
+
+                  return (
+                    <label 
+                      key={w} 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        fontSize: '12px', 
+                        cursor: 'pointer', 
+                        padding: '6px 8px', 
+                        borderRadius: '6px', 
+                        background: isChecked ? 'var(--bg-secondary)' : 'var(--bg-tertiary)',
+                        border: isChecked ? '1px solid var(--color-brand)' : '1px solid transparent',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <input 
+                        type="checkbox" 
+                        checked={isChecked} 
+                        onChange={() => handleToggleExportWeek(w)}
+                        style={{ cursor: 'pointer', accentColor: 'var(--color-brand)' }}
+                      />
+                      <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', flex: 1 }}>
+                        Settimana {fDay(mon)} - {fDay(sun)}
+                      </span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                        {countStr} ({hoursStr})
+                      </span>
+                    </label>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
 
         {exportType === 'custom' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '14px', marginTop: '4px' }}>
