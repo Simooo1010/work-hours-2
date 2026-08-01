@@ -2,46 +2,70 @@ import { supabase } from '../supabaseClient';
 import { roundHours } from './rounding';
 
 /**
- * Rimuove i tag dei wallet in coda al titolo della transazione (es: "[fuori]", "[busta]")
+ * Rimuove tutti i tag di wallet (es: "[fuori]", "[busta]") e pulisce spazi multipli
  * 
  * @param {string} title 
  * @returns {string} Titolo pulito
  */
 export const cleanTransactionTitle = (title) => {
   if (!title) return '';
-  return title.replace(/\s*\[[a-zA-Z0-9_-]+?\]$/g, '').trim();
+  return title
+    .replace(/\[.*?\]/g, '') // Rimuove qualsiasi parentesi quadra col wallet
+    .replace(/\s+/g, ' ')     // Normalizza gli spazi
+    .trim();
 };
 
 /**
- * Tenta di estrarre un intervallo di date da stringhe del tipo:
- * "Lavoro 01/07 - 15/07/26", "Lavoro 16/07/26 - 31/07/26", "Lavoro 01/07 - 15/07"
+ * Tenta di estrarre un intervallo di date da vari formati di titolo:
+ * - "Lavoro 01/07 - 15/07/26"
+ * - "Lavoro 01/07/26 - 15/07/26"
+ * - "Lavoro 1.7 - 15.7.2026"
+ * - "Lavoro 01-07 -> 15-07-26"
+ * - "Lavoro dal 01/07 al 15/07/26"
  * 
  * @param {string} title 
- * @param {number} defaultYear - Anno di default se non specificato a due cifre (es: 2026)
+ * @param {number} defaultYear - Anno di default se non specificato (es: 2026)
  * @returns {Object|null} { startDate: "YYYY-MM-DD", endDate: "YYYY-MM-DD" } oppure null
  */
 export const parseDatesFromTitle = (title, defaultYear = new Date().getFullYear()) => {
   if (!title) return null;
   const cleanStr = cleanTransactionTitle(title);
 
-  // RegEx per trovare pattern come DD/MM - DD/MM/YY oppure DD/MM/YY - DD/MM/YY
-  const rangeRegex = /(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\s*[-–—aA]\s*(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/;
+  // RegEx ultratollerante:
+  // Cerca due gruppi di date del tipo D(D)[/.-]M(M)[/.-](YY o YYYY)
+  // separati da [-–—]|dal|al|a|fino a|to|->
+  const rangeRegex = /(\d{1,2})[\/\.\-\s]+(\d{1,2})(?:[\/\.\-\s]+(\d{2,4}))?\s*(?:[-–—>|]|dal|al|a|fino\s+a|to|->)\s*(\d{1,2})[\/\.\-\s]+(\d{1,2})(?:[\/\.\-\s]+(\d{2,4}))?/i;
+  
   const match = cleanStr.match(rangeRegex);
 
-  if (!match) return null;
+  if (match) {
+    const [, d1, m1, y1, d2, m2, y2] = match;
 
-  const [, d1, m1, y1, d2, m2, y2] = match;
+    let year1 = y1 ? (y1.length === 2 ? `20${y1}` : y1) : (y2 ? (y2.length === 2 ? `20${y2}` : y2) : defaultYear);
+    let year2 = y2 ? (y2.length === 2 ? `20${y2}` : y2) : year1;
 
-  let year1 = y1 ? (y1.length === 2 ? `20${y1}` : y1) : (y2 ? (y2.length === 2 ? `20${y2}` : y2) : defaultYear);
-  let year2 = y2 ? (y2.length === 2 ? `20${y2}` : y2) : year1;
+    const pad = (n) => String(n).padStart(2, '0');
 
-  const pad = (n) => String(n).padStart(2, '0');
+    const startDate = `${year1}-${pad(m1)}-${pad(d1)}`;
+    const endDate = `${year2}-${pad(m2)}-${pad(d2)}`;
 
-  const startDate = `${year1}-${pad(m1)}-${pad(d1)}`;
-  const endDate = `${year2}-${pad(m2)}-${pad(d2)}`;
+    return { startDate, endDate };
+  }
 
-  return { startDate, endDate };
+  // Se è presente solo una singola data (es: "Lavoro 15/07/26")
+  const singleDateRegex = /(\d{1,2})[\/\.\-\s]+(\d{1,2})(?:[\/\.\-\s]+(\d{2,4}))?/i;
+  const singleMatch = cleanStr.match(singleDateRegex);
+  if (singleMatch) {
+    const [, d, m, y] = singleMatch;
+    const year = y ? (y.length === 2 ? `20${y}` : y) : defaultYear;
+    const pad = (n) => String(n).padStart(2, '0');
+    const singleDate = `${year}-${pad(m)}-${pad(d)}`;
+    return { startDate: singleDate, endDate: singleDate };
+  }
+
+  return null;
 };
+
 
 /**
  * Recupera le transazioni da Finance Tracker.
