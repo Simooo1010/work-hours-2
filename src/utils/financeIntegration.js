@@ -22,6 +22,7 @@ export const cleanTransactionTitle = (title) => {
  * - "Lavoro 1.7 - 15.7.2026"
  * - "Lavoro 01-07 -> 15-07-26"
  * - "Lavoro dal 01/07 al 15/07/26"
+ * - "01/07 - 15/07/26"
  * 
  * @param {string} title 
  * @param {number} defaultYear - Anno di default se non specificato (es: 2026)
@@ -33,7 +34,7 @@ export const parseDatesFromTitle = (title, defaultYear = new Date().getFullYear(
 
   // RegEx ultratollerante:
   // Cerca due gruppi di date del tipo D(D)[/.-]M(M)[/.-](YY o YYYY)
-  // separati da [-–—]|dal|al|a|fino a|to|->
+  // separati da [-–—>|]|dal|al|a|fino a|to|->
   const rangeRegex = /(\d{1,2})[\/\.\-\s]+(\d{1,2})(?:[\/\.\-\s]+(\d{2,4}))?\s*(?:[-–—>|]|dal|al|a|fino\s+a|to|->)\s*(\d{1,2})[\/\.\-\s]+(\d{1,2})(?:[\/\.\-\s]+(\d{2,4}))?/i;
   
   const match = cleanStr.match(rangeRegex);
@@ -66,49 +67,74 @@ export const parseDatesFromTitle = (title, defaultYear = new Date().getFullYear(
   return null;
 };
 
-
 /**
- * Recupera le transazioni da Finance Tracker.
- * Cerca prima via Supabase (se configurato e connesso), altrimenti controlla localStorage.
+ * Recupera le transazioni da Finance Tracker interrogando sia Supabase che tutte le chiavi LocalStorage note.
  * 
  * @returns {Promise<Array>} Lista delle transazioni di entrate
  */
 export const fetchFinanceTrackerIncomes = async () => {
+  let allFetchedIncomes = [];
+
+  // 1. Tenta la query su Supabase (se l'istanza Supabase è disponibile)
   try {
-    // 1. Tenta il caricamento da Supabase se non siamo in modalità Mock
-    if (supabase && !supabase.isMock) {
+    if (supabase) {
       const { data, error } = await supabase
         .from('transactions')
-        .select('*')
-        .eq('type', 'income')
-        .order('created_at', { ascending: false });
+        .select('*');
 
-      if (!error && data && data.length > 0) {
-        return data;
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const filtered = data.filter(t => {
+          const typeStr = String(t.type || '').toLowerCase();
+          return typeStr === 'income' || typeStr === 'entrata' || (!t.type && Number(t.amount) > 0);
+        });
+        allFetchedIncomes = [...allFetchedIncomes, ...filtered];
       }
     }
   } catch (err) {
-    console.warn('Impossibile accedere a Supabase per Finance Tracker, fallback a local:', err);
+    console.warn('Errore durante la query Supabase per Finance Tracker:', err);
   }
 
-  // 2. Fallback a LocalStorage (controlla sia chiavi condivise che mock locali)
-  const localKeys = ['finance_tracker_transactions', 'hopeful_salk_transactions', 'workhours_finance_incomes'];
+  // 2. Tenta il recupero da tutte le chiavi di LocalStorage note
+  const localKeys = [
+    'workhours_finance_incomes',
+    'workhours_local_transactions',
+    'hopeful_salk_transactions',
+    'finance_tracker_transactions',
+    'transactions',
+    'finance_incomes'
+  ];
+
   for (const key of localKeys) {
     const raw = localStorage.getItem(key);
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          return parsed.filter(t => t.type === 'income' || !t.type);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const filtered = parsed.filter(t => {
+            const typeStr = String(t.type || '').toLowerCase();
+            return typeStr === 'income' || typeStr === 'entrata' || (!t.type && Number(t.amount) > 0);
+          });
+          allFetchedIncomes = [...allFetchedIncomes, ...filtered];
         }
       } catch (e) {
-        console.error('Errore parsing dati locali finance:', e);
+        console.error(`Errore parsing key ${key}:`, e);
       }
     }
   }
 
-  // Se non si trova nessuna entrata registrata, restituiamo un array vuoto
-  return [];
+  // 3. Deduplica le entrate per ID o per combinazione (titolo, importo, data)
+  const seen = new Set();
+  const uniqueIncomes = [];
+
+  allFetchedIncomes.forEach(inc => {
+    const uniqueKey = inc.id || `${cleanTransactionTitle(inc.title || inc.description)}-${inc.amount}-${inc.created_at || inc.date}`;
+    if (!seen.has(uniqueKey)) {
+      seen.add(uniqueKey);
+      uniqueIncomes.push(inc);
+    }
+  });
+
+  return uniqueIncomes;
 };
 
 /**
@@ -130,16 +156,26 @@ export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro')
   if (!Array.isArray(sessions)) sessions = [];
   if (!Array.isArray(incomes)) incomes = [];
 
-  const lowerKw = (keyword || 'Lavoro').toLowerCase().trim();
+  const lowerKw = (keyword || '').toLowerCase().trim();
 
-  // 1. Filtra solo le entrate pertinenti che contengono o iniziano con la parola chiave
+  // 1. Filtra le entrate pertinenti:
+  // Se la parola chiave è presente, la cerca nel titolo O verifica se la stringa contiene un intervallo di date valido
   const relevantIncomes = incomes.filter(inc => {
-    const title = cleanTransactionTitle(inc.title || inc.description || '').toLowerCase();
-    return title.includes(lowerKw);
+    const rawTitle = inc.title || inc.description || '';
+    const cleanTitle = cleanTransactionTitle(rawTitle).toLowerCase();
+    
+    // Se l'utente non ha specificato alcuna parola chiave, prende tutte le entrate
+    if (!lowerKw) return true;
+
+    // Se il titolo include la parola chiave (es: "lavoro")
+    if (cleanTitle.includes(lowerKw)) return true;
+
+    // Oppure se il titolo contiene un pattern di date estraibile (es: "01/07 - 15/07/26")
+    const hasDates = parseDatesFromTitle(rawTitle) !== null;
+    return hasDates;
   });
 
   // 2. Raggruppiamo le sessioni lavorative per mese o per intervallo trovabile
-  // Costruiamo anche un archivio mensile dei compensi dovuti da Work Tracker
   const monthlyWorkEarnings = {};
   sessions.forEach(s => {
     const monthKey = s.date.substring(0, 7); // "YYYY-MM"
@@ -164,9 +200,6 @@ export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro')
 
   // 3. Creiamo l'elenco dei confronti
   const matches = [];
-
-  // Mappa delle entrate elaborate
-  const processedIncomeIds = new Set();
 
   // A. Analizza ogni entrata trovata nel Finance Tracker
   relevantIncomes.forEach(inc => {
@@ -214,8 +247,6 @@ export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro')
       status = 'in_attesa';
     }
 
-    processedIncomeIds.add(inc.id || rawTitle);
-
     matches.push({
       id: inc.id || `inc-${Math.random()}`,
       title: cleanTitle,
@@ -231,10 +262,9 @@ export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro')
     });
   });
 
-  // B. Verifica se ci sono mesi o periodi di lavoro registrati in Work Tracker a cui non corrisponde alcuna entrata
+  // B. Verifica se ci sono mesi di lavoro registrati in Work Tracker a cui non corrisponde alcuna entrata
   Object.keys(monthlyWorkEarnings).sort((a, b) => b.localeCompare(a)).forEach(monthKey => {
     const monthData = monthlyWorkEarnings[monthKey];
-    // Se c'è compenso atteso ma non è stato inserito nessun incasso corrispondente
     const hasIncomeForMonth = matches.some(m => m.incomeDate && m.incomeDate.startsWith(monthKey));
 
     if (!hasIncomeForMonth && monthData.expectedEarnings > 0) {

@@ -46,6 +46,7 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate }) {
   const [incomes, setIncomes] = useState([]);
   const [loadingIncomes, setLoadingIncomes] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('Lavoro');
+  const [syncFeedback, setSyncFeedback] = useState(null);
   const [showAddMockModal, setShowAddMockModal] = useState(false);
   const [newMockTitle, setNewMockTitle] = useState('Lavoro 01/07 - 15/07/26');
   const [newMockAmount, setNewMockAmount] = useState('');
@@ -62,15 +63,26 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate }) {
   // Caricamento entrate dal Finance Tracker
   const loadFinanceData = async () => {
     setLoadingIncomes(true);
+    setSyncFeedback(null);
     try {
       const data = await fetchFinanceTrackerIncomes();
-      setIncomes(data);
+      setIncomes([...data]);
+      setSyncFeedback({
+        type: 'success',
+        message: `Sincronizzazione completata! Trovate ${data.length} entrate nel Finance Tracker.`
+      });
+      setTimeout(() => setSyncFeedback(null), 4000);
     } catch (err) {
       console.error('Errore nel caricamento entrate finance:', err);
+      setSyncFeedback({
+        type: 'error',
+        message: 'Errore durante la sincronizzazione con Finance Tracker.'
+      });
     } finally {
       setLoadingIncomes(false);
     }
   };
+
 
   useEffect(() => {
     loadFinanceData();
@@ -468,7 +480,27 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate }) {
           </div>
         </div>
 
+        {syncFeedback && (
+          <div style={{ 
+            marginBottom: '14px', 
+            padding: '10px 14px', 
+            borderRadius: '12px', 
+            fontSize: '13px', 
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            backgroundColor: syncFeedback.type === 'error' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+            color: syncFeedback.type === 'error' ? '#ef4444' : '#10b981',
+            border: `1px solid ${syncFeedback.type === 'error' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`
+          }}>
+            <CheckCircle2 size={16} />
+            <span>{syncFeedback.message}</span>
+          </div>
+        )}
+
         {/* Card Summary Finanziario */}
+
         <div className="card" style={{ marginBottom: '14px', padding: isMobile ? '14px' : '20px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(180px, 1fr))', gap: isMobile ? '10px' : '16px' }}>
             <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '14px', borderRadius: '14px' }}>
