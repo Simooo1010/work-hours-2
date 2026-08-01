@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
-import { LayoutDashboard, BarChart2, Calendar, Settings as SettingsIcon, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
+import { LayoutDashboard, BarChart2, Calendar, Settings as SettingsIcon, AlertCircle, Sparkles, Loader2, TrendingUp } from 'lucide-react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Analysis from './components/Analysis';
 import SessionList from './components/SessionList';
 import Settings from './components/Settings';
+import AnalyticsAndFinance from './components/AnalyticsAndFinance';
+
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -282,6 +284,8 @@ export default function App() {
         );
       case 'analysis':
         return <Analysis sessions={sessions} hourlyRate={hourlyRate} />;
+      case 'analytics':
+        return <AnalyticsAndFinance sessions={sessions} hourlyRate={hourlyRate} />;
       case 'sessions':
         return (
           <SessionList
@@ -347,6 +351,10 @@ export default function App() {
           <button className={`sidebar-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
             <LayoutDashboard size={20} />
             <span>Dashboard</span>
+          </button>
+          <button className={`sidebar-item ${activeView === 'analytics' ? 'active' : ''}`} onClick={() => setActiveView('analytics')}>
+            <TrendingUp size={20} />
+            <span>Analytics & Finance</span>
           </button>
           <button className={`sidebar-item ${activeView === 'analysis' ? 'active' : ''}`} onClick={() => setActiveView('analysis')}>
             <BarChart2 size={20} />
@@ -423,6 +431,10 @@ export default function App() {
           <LayoutDashboard />
           <span>Dashboard</span>
         </button>
+        <button className={`nav-item ${activeView === 'analytics' ? 'active' : ''}`} onClick={() => setActiveView('analytics')}>
+          <TrendingUp />
+          <span>Analytics</span>
+        </button>
         <button className={`nav-item ${activeView === 'analysis' ? 'active' : ''}`} onClick={() => setActiveView('analysis')}>
           <BarChart2 />
           <span>Analisi</span>
@@ -439,3 +451,4 @@ export default function App() {
     </div>
   );
 }
+

@@ -73,3 +73,66 @@ export const getRoundedEndTime = (startTime, roundedHours) => {
   return `${pad(endH)}:${pad(endM)}`;
 };
 
+/**
+ * Calcola le statistiche dettagliate che mettono a confronto dati reali vs arrotondati.
+ * 
+ * @param {Array} sessionsArray - Array di sessioni di lavoro
+ * @returns {Object} Statistiche di confronto (realHours, roundedHours, deltaHours, realEarnings, roundedEarnings, deltaEarnings, etc.)
+ */
+export const calculateRealVsRoundedStats = (sessionsArray) => {
+  if (!Array.isArray(sessionsArray) || sessionsArray.length === 0) {
+    return {
+      realHours: 0,
+      roundedHours: 0,
+      deltaHours: 0,
+      deltaMinutes: 0,
+      realEarnings: 0,
+      roundedEarnings: 0,
+      deltaEarnings: 0,
+      percentageHours: 0,
+      percentageEarnings: 0,
+      count: 0
+    };
+  }
+
+  let totalRealHours = 0;
+  let totalRoundedHours = 0;
+  let totalRealEarnings = 0;
+  let totalRoundedEarnings = 0;
+
+  sessionsArray.forEach(s => {
+    const realH = Number(s.duration_hours) || 0;
+    const rate = Number(s.hourly_rate) || 0;
+    const roundedH = roundHours(realH);
+
+    totalRealHours += realH;
+    totalRoundedHours += roundedH;
+
+    // Guadagni reali: ore reali * tariffa oraria
+    totalRealEarnings += realH * rate;
+    // Guadagni arrotondati: ore arrotondate * tariffa oraria
+    totalRoundedEarnings += roundedH * rate;
+  });
+
+  const deltaHours = totalRoundedHours - totalRealHours;
+  const deltaMinutes = Math.round(deltaHours * 60);
+  const deltaEarnings = totalRoundedEarnings - totalRealEarnings;
+
+  const percentageHours = totalRealHours > 0 ? (deltaHours / totalRealHours) * 100 : 0;
+  const percentageEarnings = totalRealEarnings > 0 ? (deltaEarnings / totalRealEarnings) * 100 : 0;
+
+  return {
+    realHours: totalRealHours,
+    roundedHours: totalRoundedHours,
+    deltaHours,
+    deltaMinutes,
+    realEarnings: totalRealEarnings,
+    roundedEarnings: totalRoundedEarnings,
+    deltaEarnings,
+    percentageHours,
+    percentageEarnings,
+    count: sessionsArray.length
+  };
+};
+
+

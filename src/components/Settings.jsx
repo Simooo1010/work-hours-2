@@ -138,7 +138,32 @@ export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
         )}
       </div>
 
-      {/* 3. PROFILO UTENTE E LOGOUT */}
+      {/* 3. CONFIGURAZIONE INTEGRAZIONE FINANCE TRACKER */}
+      <div className="card">
+        <div className="card-title">
+          <Globe size={18} color="var(--color-brand)" />
+          <span>Integrazione Finance Tracker</span>
+        </div>
+
+        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '16px' }}>
+          Configura il riconoscimento automatico dei pagamenti tra <strong>Work Tracker</strong> e l'app <strong>Finance Tracker</strong>.
+        </p>
+
+        <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '12px 16px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+          <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>
+            Format di Nomenclatura Entrate
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+            Sigla predefinita riconosciuta dal sistema di confronto: <code style={{ backgroundColor: 'var(--bg-tertiary)', padding: '2px 6px', borderRadius: '4px', color: 'var(--color-brand)', fontWeight: '700' }}>Lavoro DD/mm - dd/mm/yy</code>
+          </div>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>
+            Esempio: <i>"Lavoro 01/07 - 15/07/26 [fuori]"</i> oppure <i>"Lavoro 16/07 - 31/07/26 [busta]"</i>.
+          </div>
+        </div>
+      </div>
+
+      {/* 4. PROFILO UTENTE E LOGOUT */}
+
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
