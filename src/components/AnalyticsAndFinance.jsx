@@ -152,15 +152,17 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSes
   }, [filteredSessions]);
 
   // --- CONFRONTO FINANZIARIO CON FINANCE TRACKER ---
+  // Passo 1: Calcola i match SOLO per i pagamenti reali dal Finance Tracker (mai voci sintetiche)
   const financeMatchesRaw = useMemo(() => {
     return matchWorkHoursWithFinance(sessions, incomes, searchKeyword);
   }, [sessions, incomes, searchKeyword]);
 
+  // Passo 2: Filtra i pagamenti reali per il periodo temporale selezionato
   const financeMatches = useMemo(() => {
     if (timeRange === 'totale') return financeMatchesRaw;
 
     return financeMatchesRaw.filter(m => {
-      // Controllo di sovrapposizione delle date
+      // Controllo di sovrapposizione delle date del pagamento col periodo visualizzato
       let pStart, pEnd;
       if (m.dateRange) {
         pStart = new Date(m.dateRange.startDate);
@@ -214,21 +216,22 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSes
     });
   }, [financeMatchesRaw, timeRange, currentDate, customStartDate, customEndDate]);
 
+  // Passo 3: Calcola i totali finanziari.
+  // - Compenso Dovuto: direttamente dalle sessioni filtrate per il periodo corrente (stats.roundedEarnings)
+  // - Incassato: somma dei pagamenti reali che si sovrappongono al periodo corrente
+  // - Saldo in Attesa: compenso dovuto - incassato (se positivo)
   const financeSummary = useMemo(() => {
-    let totalExpected = 0;
+    const totalExpected = stats.roundedEarnings;
     let totalReceived = 0;
-    let totalPending = 0;
 
     financeMatches.forEach(m => {
-      totalExpected += m.expectedEarnings;
       totalReceived += m.incomeAmount;
-      if (m.difference < 0) {
-        totalPending += Math.abs(m.difference);
-      }
     });
 
+    const totalPending = Math.max(0, totalExpected - totalReceived);
+
     return { totalExpected, totalReceived, totalPending };
-  }, [financeMatches]);
+  }, [stats.roundedEarnings, financeMatches]);
 
   // Navigazione date
   const handlePrevPeriod = () => {

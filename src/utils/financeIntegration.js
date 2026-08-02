@@ -200,12 +200,16 @@ export const saveMockFinanceIncomes = (incomes) => {
 // ============================================================================
 
 /**
- * Confronta i compensi dovuti da Work Tracker con le entrate registrate in Finance Tracker.
+ * Confronta SOLO le entrate reali dal Finance Tracker con le sessioni lavorative.
+ * NON genera voci sintetiche "in attesa" — quella logica è gestita dal componente.
+ * 
+ * Ogni match porta con sé la lista delle sessioni abbinate (matchedSessions)
+ * in modo che il componente possa ricalcolare expectedEarnings in base al filtro temporale.
  * 
  * @param {Array} sessions - Tutte le sessioni di lavoro
  * @param {Array} incomes - Entrate dal Finance Tracker
  * @param {string} keyword - Parola chiave di ricerca (default: "Lavoro")
- * @returns {Array} Risultati del confronto raggruppati per periodo o transazione
+ * @returns {Array} Risultati del confronto per ogni pagamento reale
  */
 export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro') => {
   if (!Array.isArray(sessions)) sessions = [];
@@ -213,52 +217,21 @@ export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro')
 
   const lowerKw = (keyword || '').toLowerCase().trim();
 
-  // 1. Filtra le entrate pertinenti:
-  // Se la parola chiave è presente, la cerca nel titolo O verifica se la stringa contiene un intervallo di date valido
+  // 1. Filtra le entrate pertinenti
   const relevantIncomes = incomes.filter(inc => {
     const rawTitle = inc.title || inc.description || '';
     const cleanTitle = cleanTransactionTitle(rawTitle).toLowerCase();
     
-    // Se l'utente non ha specificato alcuna parola chiave, prende tutte le entrate
     if (!lowerKw) return true;
-
-    // Se il titolo include la parola chiave (es: "lavoro")
     if (cleanTitle.includes(lowerKw)) return true;
 
-    // Oppure se il titolo contiene un pattern di date estraibile (es: "01/07 - 15/07/26")
     const hasDates = parseDatesFromTitle(rawTitle) !== null;
     return hasDates;
   });
 
-  // 2. Raggruppiamo le sessioni lavorative per mese o per intervallo trovabile
-  const monthlyWorkEarnings = {};
-  sessions.forEach(s => {
-    if (!s.date) return;
-    const monthKey = s.date.substring(0, 7); // "YYYY-MM"
-    if (!monthlyWorkEarnings[monthKey]) {
-      monthlyWorkEarnings[monthKey] = {
-        monthKey,
-        realHours: 0,
-        roundedHours: 0,
-        expectedEarnings: 0,
-        sessions: []
-      };
-    }
-    const realH = Number(s.duration_hours) || 0;
-    const roundedH = roundHours(realH);
-    const rate = Number(s.hourly_rate) || 0;
-
-    monthlyWorkEarnings[monthKey].realHours += realH;
-    monthlyWorkEarnings[monthKey].roundedHours += roundedH;
-    monthlyWorkEarnings[monthKey].expectedEarnings += roundedH * rate;
-    monthlyWorkEarnings[monthKey].sessions.push(s);
-  });
-
-  // 3. Creiamo l'elenco dei confronti
+  // 2. Per ogni entrata reale, trova le sessioni abbinate
   const matches = [];
-  const matchedSessionIds = new Set();
 
-  // A. Analizza ogni entrata trovata nel Finance Tracker
   relevantIncomes.forEach(inc => {
     const rawTitle = inc.title || inc.description || 'Entrata senza titolo';
     const cleanTitle = cleanTransactionTitle(rawTitle);
@@ -268,26 +241,23 @@ export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro')
     // Tenta di estrarre il range dal titolo (es: "Lavoro 01/07 - 15/07/26")
     const dateRange = parseDatesFromTitle(cleanTitle);
 
-    let matchingSessions = [];
-    let expectedEarnings = 0;
+    let matchedSessions = [];
     let periodLabel = '';
 
     if (dateRange) {
       // Filtra le sessioni che ricadono nell'intervallo [startDate, endDate]
-      matchingSessions = sessions.filter(s => s.date >= dateRange.startDate && s.date <= dateRange.endDate);
+      matchedSessions = sessions.filter(s => s.date >= dateRange.startDate && s.date <= dateRange.endDate);
       periodLabel = `${dateRange.startDate} → ${dateRange.endDate}`;
     } else if (incDate) {
       // Altrimenti abbina per mese di creazione della transazione
       const monthKey = incDate.substring(0, 7);
-      if (monthlyWorkEarnings[monthKey]) {
-        matchingSessions = monthlyWorkEarnings[monthKey].sessions;
-      }
+      matchedSessions = sessions.filter(s => s.date && s.date.startsWith(monthKey));
       periodLabel = `Mese di ${incDate.substring(0, 7)}`;
     }
 
-    // Calcola il compenso spettante per le sessioni abbinate
-    matchingSessions.forEach(s => {
-      matchedSessionIds.add(s.id);
+    // Calcola il compenso spettante per TUTTE le sessioni abbinate
+    let expectedEarnings = 0;
+    matchedSessions.forEach(s => {
       const roundedH = roundHours(Number(s.duration_hours) || 0);
       const rate = Number(s.hourly_rate) || 0;
       expectedEarnings += roundedH * rate;
@@ -316,47 +286,9 @@ export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro')
       periodLabel,
       dateRange,
       incomeDate: incDate,
-      sessionsCount: matchingSessions.length
+      sessionsCount: matchedSessions.length,
+      matchedSessions  // Portiamo le sessioni per ricalcolo nel componente
     });
-  });
-
-  // B. Verifica se ci sono sessioni di lavoro NON pagate (non abbinate)
-  const unmatchedByMonth = {};
-  
-  sessions.forEach(s => {
-    if (!s.date || matchedSessionIds.has(s.id)) return;
-    
-    const monthKey = s.date.substring(0, 7); // "YYYY-MM"
-    if (!unmatchedByMonth[monthKey]) {
-      unmatchedByMonth[monthKey] = {
-        monthKey,
-        expectedEarnings: 0,
-        sessions: []
-      };
-    }
-    const roundedH = roundHours(Number(s.duration_hours) || 0);
-    const rate = Number(s.hourly_rate) || 0;
-    unmatchedByMonth[monthKey].expectedEarnings += roundedH * rate;
-    unmatchedByMonth[monthKey].sessions.push(s);
-  });
-
-  Object.keys(unmatchedByMonth).sort((a, b) => b.localeCompare(a)).forEach(monthKey => {
-    const monthData = unmatchedByMonth[monthKey];
-    if (monthData.expectedEarnings > 0) {
-      matches.push({
-        id: `unpaid-${monthKey}`,
-        title: `Lavoro ${monthKey}`,
-        rawTitle: `Lavoro ${monthKey}`,
-        incomeAmount: 0,
-        expectedEarnings: monthData.expectedEarnings,
-        difference: -monthData.expectedEarnings,
-        status: 'in_attesa',
-        periodLabel: `Mese di ${monthKey}`,
-        dateRange: null,
-        incomeDate: `${monthKey}-01`,
-        sessionsCount: monthData.sessions.length
-      });
-    }
   });
 
   return matches;
