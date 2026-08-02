@@ -256,6 +256,7 @@ export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro')
 
   // 3. Creiamo l'elenco dei confronti
   const matches = [];
+  const matchedSessionIds = new Set();
 
   // A. Analizza ogni entrata trovata nel Finance Tracker
   relevantIncomes.forEach(inc => {
@@ -286,6 +287,7 @@ export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro')
 
     // Calcola il compenso spettante per le sessioni abbinate
     matchingSessions.forEach(s => {
+      matchedSessionIds.add(s.id);
       const roundedH = roundHours(Number(s.duration_hours) || 0);
       const rate = Number(s.hourly_rate) || 0;
       expectedEarnings += roundedH * rate;
@@ -318,21 +320,29 @@ export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro')
     });
   });
 
-  // B. Verifica se ci sono mesi di lavoro registrati in Work Tracker a cui non corrisponde alcuna entrata
-  Object.keys(monthlyWorkEarnings).sort((a, b) => b.localeCompare(a)).forEach(monthKey => {
-    const monthData = monthlyWorkEarnings[monthKey];
-    // Controlla sia per mese dell'entrata che per intervallo di date che copre il mese
-    const hasIncomeForMonth = matches.some(m => {
-      if (m.incomeDate && m.incomeDate.startsWith(monthKey)) return true;
-      if (m.dateRange) {
-        const monthStart = `${monthKey}-01`;
-        const monthEnd = `${monthKey}-31`;
-        return m.dateRange.startDate <= monthEnd && m.dateRange.endDate >= monthStart;
-      }
-      return false;
-    });
+  // B. Verifica se ci sono sessioni di lavoro NON pagate (non abbinate)
+  const unmatchedByMonth = {};
+  
+  sessions.forEach(s => {
+    if (!s.date || matchedSessionIds.has(s.id)) return;
+    
+    const monthKey = s.date.substring(0, 7); // "YYYY-MM"
+    if (!unmatchedByMonth[monthKey]) {
+      unmatchedByMonth[monthKey] = {
+        monthKey,
+        expectedEarnings: 0,
+        sessions: []
+      };
+    }
+    const roundedH = roundHours(Number(s.duration_hours) || 0);
+    const rate = Number(s.hourly_rate) || 0;
+    unmatchedByMonth[monthKey].expectedEarnings += roundedH * rate;
+    unmatchedByMonth[monthKey].sessions.push(s);
+  });
 
-    if (!hasIncomeForMonth && monthData.expectedEarnings > 0) {
+  Object.keys(unmatchedByMonth).sort((a, b) => b.localeCompare(a)).forEach(monthKey => {
+    const monthData = unmatchedByMonth[monthKey];
+    if (monthData.expectedEarnings > 0) {
       matches.push({
         id: `unpaid-${monthKey}`,
         title: `Lavoro ${monthKey}`,
