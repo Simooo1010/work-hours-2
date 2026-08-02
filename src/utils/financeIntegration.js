@@ -1,5 +1,28 @@
-import { supabase } from '../supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import { roundHours } from './rounding';
+
+// ============================================================================
+// FINANCE TRACKER - CLIENT SUPABASE DEDICATO
+// ============================================================================
+// Il Finance Tracker (hopeful-salk) usa un'istanza Supabase propria.
+// Creiamo un client dedicato per leggere le sue transazioni direttamente
+// dal database, indipendentemente dal client usato dal Work Hours app.
+// ============================================================================
+
+const FINANCE_SUPABASE_URL = 'https://aedoncqvypsrksnqiwgh.supabase.co';
+const FINANCE_SUPABASE_ANON_KEY = 'sb_publishable_ByJxMVJBtmXSFcK57r3bPg_x7C_mEK7';
+
+let financeSupabase = null;
+
+try {
+  financeSupabase = createClient(FINANCE_SUPABASE_URL, FINANCE_SUPABASE_ANON_KEY);
+} catch (err) {
+  console.error('[FinanceIntegration] Errore creazione client Supabase Finance Tracker:', err);
+}
+
+// ============================================================================
+// UTILITIES
+// ============================================================================
 
 /**
  * Rimuove tutti i tag di wallet (es: "[fuori]", "[busta]") e pulisce spazi multipli
@@ -67,47 +90,71 @@ export const parseDatesFromTitle = (title, defaultYear = new Date().getFullYear(
   return null;
 };
 
+// ============================================================================
+// FETCH TRANSAZIONI DAL FINANCE TRACKER
+// ============================================================================
+
 /**
- * Recupera le transazioni da Finance Tracker interrogando sia Supabase che tutte le chiavi LocalStorage note.
+ * Recupera le transazioni di tipo "income" dal Finance Tracker.
+ * Usa il client Supabase dedicato per connettersi al database di hopeful-salk.
+ * In caso di fallimento, tenta anche le chiavi LocalStorage come fallback.
  * 
  * @returns {Promise<Array>} Lista delle transazioni di entrate
  */
 export const fetchFinanceTrackerIncomes = async () => {
   let allFetchedIncomes = [];
+  let supabaseSuccess = false;
 
-  // 1. Tenta la query su Supabase (se l'istanza Supabase è disponibile)
-  try {
-    if (supabase) {
-      const { data, error } = await supabase
+  // 1. Query diretta sul Supabase del Finance Tracker
+  if (financeSupabase) {
+    try {
+      console.log('[FinanceIntegration] Connessione a Supabase Finance Tracker...');
+      
+      const { data, error } = await financeSupabase
         .from('transactions')
-        .select('*');
+        .select('*')
+        .eq('type', 'income');
 
-      if (!error && Array.isArray(data) && data.length > 0) {
-        const filtered = data.filter(t => {
-          const typeStr = String(t.type || '').toLowerCase();
-          return typeStr === 'income' || typeStr === 'entrata' || (!t.type && Number(t.amount) > 0);
-        });
-        allFetchedIncomes = [...allFetchedIncomes, ...filtered];
+      if (error) {
+        console.warn('[FinanceIntegration] Errore query Supabase:', error.message);
+        
+        // Tentativo alternativo: scarica tutte le transazioni e filtra lato client
+        const { data: allData, error: allError } = await financeSupabase
+          .from('transactions')
+          .select('*');
+        
+        if (!allError && Array.isArray(allData) && allData.length > 0) {
+          console.log(`[FinanceIntegration] Fallback: caricate ${allData.length} transazioni totali da Supabase`);
+          const filtered = allData.filter(t => {
+            const typeStr = String(t.type || '').toLowerCase();
+            return typeStr === 'income' || typeStr === 'entrata' || (!t.type && Number(t.amount) > 0);
+          });
+          allFetchedIncomes = [...filtered];
+          supabaseSuccess = true;
+        }
+      } else if (Array.isArray(data)) {
+        console.log(`[FinanceIntegration] Caricate ${data.length} entrate da Supabase Finance Tracker`);
+        allFetchedIncomes = [...data];
+        supabaseSuccess = true;
       }
+    } catch (err) {
+      console.warn('[FinanceIntegration] Eccezione durante la query Supabase:', err);
     }
-  } catch (err) {
-    console.warn('Errore durante la query Supabase per Finance Tracker:', err);
+  } else {
+    console.warn('[FinanceIntegration] Client Supabase Finance Tracker non disponibile');
   }
 
-  // 2. Tenta il recupero da tutte le chiavi di LocalStorage note
+  // 2. Fallback: LocalStorage (per entrate test/mock salvate localmente)
   const localKeys = [
     'workhours_finance_incomes',
     'workhours_local_transactions',
-    'hopeful_salk_transactions',
-    'finance_tracker_transactions',
-    'transactions',
-    'finance_incomes'
+    'finance_tracker_transactions'
   ];
 
   for (const key of localKeys) {
-    const raw = localStorage.getItem(key);
-    if (raw) {
-      try {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
           const filtered = parsed.filter(t => {
@@ -116,9 +163,9 @@ export const fetchFinanceTrackerIncomes = async () => {
           });
           allFetchedIncomes = [...allFetchedIncomes, ...filtered];
         }
-      } catch (e) {
-        console.error(`Errore parsing key ${key}:`, e);
       }
+    } catch (e) {
+      // Ignora errori di parsing localStorage
     }
   }
 
@@ -127,12 +174,16 @@ export const fetchFinanceTrackerIncomes = async () => {
   const uniqueIncomes = [];
 
   allFetchedIncomes.forEach(inc => {
-    const uniqueKey = inc.id || `${cleanTransactionTitle(inc.title || inc.description)}-${inc.amount}-${inc.created_at || inc.date}`;
+    const uniqueKey = inc.id 
+      ? String(inc.id) 
+      : `${cleanTransactionTitle(inc.title || inc.description)}-${inc.amount}-${inc.created_at || inc.date}`;
     if (!seen.has(uniqueKey)) {
       seen.add(uniqueKey);
       uniqueIncomes.push(inc);
     }
   });
+
+  console.log(`[FinanceIntegration] Totale entrate uniche trovate: ${uniqueIncomes.length} (Supabase: ${supabaseSuccess ? 'OK' : 'FALLITO'})`);
 
   return uniqueIncomes;
 };
@@ -143,6 +194,10 @@ export const fetchFinanceTrackerIncomes = async () => {
 export const saveMockFinanceIncomes = (incomes) => {
   localStorage.setItem('workhours_finance_incomes', JSON.stringify(incomes));
 };
+
+// ============================================================================
+// MATCHING: CONFRONTO ORE LAVORATE VS PAGAMENTI RICEVUTI
+// ============================================================================
 
 /**
  * Confronta i compensi dovuti da Work Tracker con le entrate registrate in Finance Tracker.
@@ -178,6 +233,7 @@ export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro')
   // 2. Raggruppiamo le sessioni lavorative per mese o per intervallo trovabile
   const monthlyWorkEarnings = {};
   sessions.forEach(s => {
+    if (!s.date) return;
     const monthKey = s.date.substring(0, 7); // "YYYY-MM"
     if (!monthlyWorkEarnings[monthKey]) {
       monthlyWorkEarnings[monthKey] = {
@@ -265,7 +321,16 @@ export const matchWorkHoursWithFinance = (sessions, incomes, keyword = 'Lavoro')
   // B. Verifica se ci sono mesi di lavoro registrati in Work Tracker a cui non corrisponde alcuna entrata
   Object.keys(monthlyWorkEarnings).sort((a, b) => b.localeCompare(a)).forEach(monthKey => {
     const monthData = monthlyWorkEarnings[monthKey];
-    const hasIncomeForMonth = matches.some(m => m.incomeDate && m.incomeDate.startsWith(monthKey));
+    // Controlla sia per mese dell'entrata che per intervallo di date che copre il mese
+    const hasIncomeForMonth = matches.some(m => {
+      if (m.incomeDate && m.incomeDate.startsWith(monthKey)) return true;
+      if (m.dateRange) {
+        const monthStart = `${monthKey}-01`;
+        const monthEnd = `${monthKey}-31`;
+        return m.dateRange.startDate <= monthEnd && m.dateRange.endDate >= monthStart;
+      }
+      return false;
+    });
 
     if (!hasIncomeForMonth && monthData.expectedEarnings > 0) {
       matches.push({

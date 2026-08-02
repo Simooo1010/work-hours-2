@@ -190,6 +190,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 
+/* Animation Utilities */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 /* Common UI Elements */
 .header {
   padding: 20px 24px 16px 24px;
@@ -1373,6 +1383,48 @@ input:focus, select:focus, textarea:focus {
   }
   .header {
     padding: 16px 16px 12px 16px;
+  }
+  .nav-bar {
+    height: 60px;
+    bottom: 12px;
+    width: calc(100% - 20px);
+    padding: 0 4px;
+  }
+  .nav-item {
+    font-size: 9px;
+    gap: 1px;
+    padding: 2px 1px;
+  }
+  .nav-item svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Extra small screens (iPhone SE, small Android) */
+@media (max-width: 380px) {
+  .nav-bar {
+    height: 56px;
+    bottom: 8px;
+    width: calc(100% - 16px);
+    padding: 0 2px;
+  }
+  .nav-item {
+    font-size: 8px;
+    gap: 0;
+    padding: 2px 0;
+  }
+  .nav-item svg {
+    width: 16px;
+    height: 16px;
+  }
+  .view-content {
+    padding: 12px;
+    gap: 12px;
+  }
+  .card {
+    padding: 12px;
+    border-radius: 16px;
   }
 }
 

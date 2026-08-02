@@ -67,21 +67,29 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate }) {
     try {
       const data = await fetchFinanceTrackerIncomes();
       setIncomes([...data]);
-      setSyncFeedback({
-        type: 'success',
-        message: `Sincronizzazione completata! Trovate ${data.length} entrate nel Finance Tracker.`
-      });
-      setTimeout(() => setSyncFeedback(null), 4000);
+      if (data.length > 0) {
+        setSyncFeedback({
+          type: 'success',
+          message: `✅ Sincronizzazione completata! Trovate ${data.length} entrate dal Finance Tracker.`
+        });
+      } else {
+        setSyncFeedback({
+          type: 'warning',
+          message: '⚠️ Connessione riuscita, ma nessuna entrata "income" trovata nel Finance Tracker. Verifica di avere transazioni di tipo "income" con la sigla "Lavoro".'
+        });
+      }
+      setTimeout(() => setSyncFeedback(null), 8000);
     } catch (err) {
       console.error('Errore nel caricamento entrate finance:', err);
       setSyncFeedback({
         type: 'error',
-        message: 'Errore durante la sincronizzazione con Finance Tracker.'
+        message: `❌ Errore durante la sincronizzazione: ${err.message || 'connessione non riuscita al database Finance Tracker.'}`
       });
     } finally {
       setLoadingIncomes(false);
     }
   };
+
 
 
   useEffect(() => {
@@ -483,18 +491,31 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate }) {
         {syncFeedback && (
           <div style={{ 
             marginBottom: '14px', 
-            padding: '10px 14px', 
+            padding: '12px 14px', 
             borderRadius: '12px', 
             fontSize: '13px', 
             fontWeight: '600',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             gap: '8px',
-            backgroundColor: syncFeedback.type === 'error' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-            color: syncFeedback.type === 'error' ? '#ef4444' : '#10b981',
-            border: `1px solid ${syncFeedback.type === 'error' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`
+            lineHeight: '1.4',
+            backgroundColor: 
+              syncFeedback.type === 'error' ? 'rgba(239, 68, 68, 0.12)' : 
+              syncFeedback.type === 'warning' ? 'rgba(245, 158, 11, 0.12)' : 
+              'rgba(16, 185, 129, 0.12)',
+            color: 
+              syncFeedback.type === 'error' ? '#ef4444' : 
+              syncFeedback.type === 'warning' ? '#f59e0b' : 
+              '#10b981',
+            border: `1px solid ${
+              syncFeedback.type === 'error' ? 'rgba(239, 68, 68, 0.25)' : 
+              syncFeedback.type === 'warning' ? 'rgba(245, 158, 11, 0.25)' : 
+              'rgba(16, 185, 129, 0.25)'
+            }`
           }}>
-            <CheckCircle2 size={16} />
+            {syncFeedback.type === 'error' ? <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '1px' }} /> : 
+             syncFeedback.type === 'warning' ? <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '1px' }} /> :
+             <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: '1px' }} />}
             <span>{syncFeedback.message}</span>
           </div>
         )}

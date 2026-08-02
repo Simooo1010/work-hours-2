@@ -429,11 +429,11 @@ export default function App() {
       <nav className="nav-bar mobile-nav">
         <button className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
           <LayoutDashboard />
-          <span>Dashboard</span>
+          <span>Home</span>
         </button>
         <button className={`nav-item ${activeView === 'analytics' ? 'active' : ''}`} onClick={() => setActiveView('analytics')}>
           <TrendingUp />
-          <span>Analytics</span>
+          <span>Finance</span>
         </button>
         <button className={`nav-item ${activeView === 'analysis' ? 'active' : ''}`} onClick={() => setActiveView('analysis')}>
           <BarChart2 />
@@ -445,7 +445,7 @@ export default function App() {
         </button>
         <button className={`nav-item ${activeView === 'settings' ? 'active' : ''}`} onClick={() => setActiveView('settings')}>
           <SettingsIcon />
-          <span>Impostazioni</span>
+          <span>Menu</span>
         </button>
       </nav>
     </div>
