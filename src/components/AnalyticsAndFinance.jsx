@@ -148,17 +148,14 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate }) {
 
   // --- CONFRONTO FINANZIARIO CON FINANCE TRACKER ---
   const financeMatchesRaw = useMemo(() => {
-    return matchWorkHoursWithFinance(filteredSessions, incomes, searchKeyword);
-  }, [filteredSessions, incomes, searchKeyword]);
+    return matchWorkHoursWithFinance(sessions, incomes, searchKeyword);
+  }, [sessions, incomes, searchKeyword]);
 
   const financeMatches = useMemo(() => {
     if (timeRange === 'totale') return financeMatchesRaw;
 
     return financeMatchesRaw.filter(m => {
-      // 1. Se ha sessioni abbinate, lo mostriamo sempre (è rilevante)
-      if (m.sessionsCount > 0) return true;
-
-      // 2. Controllo di sovrapposizione delle date
+      // Controllo di sovrapposizione delle date
       let pStart, pEnd;
       if (m.dateRange) {
         pStart = new Date(m.dateRange.startDate);
