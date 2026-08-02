@@ -35,7 +35,7 @@ const MONTHS_IT = [
 
 const WEEKDAYS_IT = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
 
-export default function AnalyticsAndFinance({ sessions, hourlyRate }) {
+export default function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
   // Stato Intervallo Temporale
   const [timeRange, setTimeRange] = useState('mese'); // 'settimana', 'mese', 'anno', 'totale', 'custom'
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -65,6 +65,11 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate }) {
     setLoadingIncomes(true);
     setSyncFeedback(null);
     try {
+      // Sincronizza anche le sessioni lavorative se la funzione è passata dal parent
+      if (typeof onRefreshSessions === 'function') {
+        await onRefreshSessions();
+      }
+
       const data = await fetchFinanceTrackerIncomes();
       setIncomes([...data]);
       if (data.length > 0) {

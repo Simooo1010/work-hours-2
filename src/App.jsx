@@ -269,6 +269,42 @@ export default function App() {
     return `${isNegative ? '-' : ''}${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   };
 
+  // Sincronizzazione automatica tra le sezioni
+  useEffect(() => {
+    if (user && !loading) {
+      supabase
+        .from('sessions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false })
+        .order('start_time', { ascending: false })
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setSessions(data);
+          }
+        });
+    }
+  }, [activeView, user]); // Refetch leggero in background quando si cambia schermata
+
+  // Sincronizzazione manuale globale
+  const handleRefreshSessions = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false })
+        .order('start_time', { ascending: false });
+      
+      if (!error && data) {
+        setSessions(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Renderizza la vista corrente
   const renderView = () => {
     switch (activeView) {
@@ -285,7 +321,7 @@ export default function App() {
       case 'analysis':
         return <Analysis sessions={sessions} hourlyRate={hourlyRate} />;
       case 'analytics':
-        return <AnalyticsAndFinance sessions={sessions} hourlyRate={hourlyRate} />;
+        return <AnalyticsAndFinance sessions={sessions} hourlyRate={hourlyRate} onRefreshSessions={handleRefreshSessions} />;
       case 'sessions':
         return (
           <SessionList
