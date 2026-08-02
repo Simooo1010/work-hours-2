@@ -147,9 +147,70 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate }) {
   }, [filteredSessions]);
 
   // --- CONFRONTO FINANZIARIO CON FINANCE TRACKER ---
-  const financeMatches = useMemo(() => {
+  const financeMatchesRaw = useMemo(() => {
     return matchWorkHoursWithFinance(filteredSessions, incomes, searchKeyword);
   }, [filteredSessions, incomes, searchKeyword]);
+
+  const financeMatches = useMemo(() => {
+    if (timeRange === 'totale') return financeMatchesRaw;
+
+    return financeMatchesRaw.filter(m => {
+      // 1. Se ha sessioni abbinate, lo mostriamo sempre (è rilevante)
+      if (m.sessionsCount > 0) return true;
+
+      // 2. Controllo di sovrapposizione delle date
+      let pStart, pEnd;
+      if (m.dateRange) {
+        pStart = new Date(m.dateRange.startDate);
+        pEnd = new Date(m.dateRange.endDate);
+      } else if (m.incomeDate) {
+        const incD = new Date(m.incomeDate);
+        pStart = new Date(incD.getFullYear(), incD.getMonth(), 1);
+        pEnd = new Date(incD.getFullYear(), incD.getMonth() + 1, 0);
+      } else {
+        return false;
+      }
+      pStart.setHours(0, 0, 0, 0);
+      pEnd.setHours(23, 59, 59, 999);
+
+      if (timeRange === 'mese') {
+        const mStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const mEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59, 999);
+        return pStart <= mEnd && pEnd >= mStart;
+      }
+
+      if (timeRange === 'anno') {
+        const yStart = new Date(currentDate.getFullYear(), 0, 1);
+        const yEnd = new Date(currentDate.getFullYear(), 11, 31, 23, 59, 59, 999);
+        return pStart <= yEnd && pEnd >= yStart;
+      }
+
+      if (timeRange === 'settimana') {
+        const d = new Date(currentDate);
+        const day = d.getDay();
+        const diffToMon = d.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(d.setDate(diffToMon));
+        monday.setHours(0, 0, 0, 0);
+
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        sunday.setHours(23, 59, 59, 999);
+
+        return pStart <= sunday && pEnd >= monday;
+      }
+
+      if (timeRange === 'custom') {
+        if (!customStartDate && !customEndDate) return true;
+        const start = customStartDate ? new Date(customStartDate) : new Date('2000-01-01');
+        const end = customEndDate ? new Date(customEndDate) : new Date('2099-12-31');
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        return pStart <= end && pEnd >= start;
+      }
+
+      return false;
+    });
+  }, [financeMatchesRaw, timeRange, currentDate, customStartDate, customEndDate]);
 
   const financeSummary = useMemo(() => {
     let totalExpected = 0;
