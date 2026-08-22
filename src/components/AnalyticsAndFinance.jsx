@@ -233,6 +233,56 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSes
     return { totalExpected, totalReceived, totalPending };
   }, [stats.roundedEarnings, financeMatches]);
 
+  // Passo 4: Qualità del pagamento — calcolata SOLO sui periodi con pagamenti reali
+  // Confronta la tariffa effettiva (incassato / ore effettivamente coperte dai pagamenti) vs tariffa attesa
+  const paymentQuality = useMemo(() => {
+    if (financeMatches.length === 0 || financeSummary.totalReceived === 0) return null;
+
+    // Ore arrotondate coperte dai pagamenti presenti nel periodo
+    let coveredRoundedHours = 0;
+    financeMatches.forEach(m => {
+      if (m.incomeAmount > 0 && m.expectedEarnings > 0) {
+        // Se il pagamento ha un expectedEarnings, backtrack le ore: expected = hours * rate → hours = expected / rate
+        // Ma usiamo direttamente le sessioni abbinate già calcolate
+        // Usiamo la tariffa media dalle sessioni filtrate
+        const avgRate = stats.roundedHours > 0 ? (stats.roundedEarnings / stats.roundedHours) : hourlyRate;
+        coveredRoundedHours += avgRate > 0 ? m.expectedEarnings / avgRate : 0;
+      }
+    });
+
+    // Tariffa oraria effettiva = incassato totale / ore coperte dai pagamenti
+    const avgRate = stats.roundedHours > 0 ? (stats.roundedEarnings / stats.roundedHours) : hourlyRate;
+    const effectiveHourlyRate = coveredRoundedHours > 0
+      ? financeSummary.totalReceived / coveredRoundedHours
+      : financeSummary.totalReceived / (stats.roundedHours || 1);
+
+    // Delta rispetto alla tariffa contrattuale
+    const rateDelta = effectiveHourlyRate - avgRate;
+    const rateDeltaPct = avgRate > 0 ? (rateDelta / avgRate) * 100 : 0;
+
+    // Delta assoluto incassato vs dovuto (solo sui periodi con pagamenti)
+    const totalExpectedPaid = financeMatches.reduce((sum, m) => sum + m.expectedEarnings, 0);
+    const absoluteDelta = financeSummary.totalReceived - totalExpectedPaid;
+    const absoluteDeltaPct = totalExpectedPaid > 0 ? (absoluteDelta / totalExpectedPaid) * 100 : 0;
+
+    // Percentuale di pagamento completamento
+    const paymentCompletionPct = totalExpectedPaid > 0
+      ? Math.min((financeSummary.totalReceived / totalExpectedPaid) * 100, 999)
+      : 0;
+
+    return {
+      effectiveHourlyRate,
+      avgRate,
+      rateDelta,
+      rateDeltaPct,
+      absoluteDelta,
+      absoluteDeltaPct,
+      paymentCompletionPct,
+      totalExpectedPaid,
+      coveredRoundedHours
+    };
+  }, [financeMatches, financeSummary, stats, hourlyRate]);
+
   // Navigazione date
   const handlePrevPeriod = () => {
     const d = new Date(currentDate);
@@ -610,6 +660,86 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSes
             </div>
           </div>
         </div>
+
+        {/* Card Qualità Pagamento — visibile solo se ci sono incassi nel periodo */}
+        {paymentQuality && (
+          <div className="card" style={{ marginBottom: '14px', padding: isMobile ? '14px' : '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <PieChart size={16} style={{ color: 'var(--color-brand)' }} />
+                <span style={{ fontSize: '12px', fontWeight: '700', letterSpacing: '0.05em', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                  Qualità Pagamento Ricevuto
+                </span>
+              </div>
+              <span style={{
+                fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '9999px',
+                backgroundColor: paymentQuality.paymentCompletionPct >= 100 ? 'rgba(16,185,129,0.15)' : paymentQuality.paymentCompletionPct >= 80 ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)',
+                color: paymentQuality.paymentCompletionPct >= 100 ? '#10b981' : paymentQuality.paymentCompletionPct >= 80 ? '#f59e0b' : '#ef4444'
+              }}>
+                {paymentQuality.paymentCompletionPct.toFixed(1)}% saldato
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: isMobile ? '10px' : '14px', marginBottom: '16px' }}>
+              <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '14px', borderRadius: '12px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginBottom: '4px' }}>Tariffa Effettiva</div>
+                <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-primary)', lineHeight: 1 }}>
+                  €{paymentQuality.effectiveHourlyRate.toFixed(2)}<span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)' }}>/h</span>
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  vs €{paymentQuality.avgRate.toFixed(2)}/h contrattuale
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '14px', borderRadius: '12px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginBottom: '4px' }}>Δ Tariffa Oraria</div>
+                <div style={{ fontSize: '20px', fontWeight: '800', lineHeight: 1, color: paymentQuality.rateDelta >= 0 ? '#10b981' : '#ef4444' }}>
+                  {paymentQuality.rateDelta >= 0 ? '+' : ''}€{paymentQuality.rateDelta.toFixed(2)}<span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)' }}>/h</span>
+                </div>
+                <div style={{ fontSize: '11px', marginTop: '4px', color: paymentQuality.rateDelta >= 0 ? '#10b981' : '#ef4444', fontWeight: '600' }}>
+                  {paymentQuality.rateDelta >= 0 ? '▲' : '▼'} {Math.abs(paymentQuality.rateDeltaPct).toFixed(1)}% rispetto al previsto
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '14px', borderRadius: '12px', gridColumn: isMobile ? '1 / -1' : 'auto' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginBottom: '4px' }}>Surplus / Deficit</div>
+                <div style={{ fontSize: '20px', fontWeight: '800', lineHeight: 1, color: paymentQuality.absoluteDelta >= 0 ? '#10b981' : '#ef4444' }}>
+                  {paymentQuality.absoluteDelta >= 0 ? '+' : ''}€{paymentQuality.absoluteDelta.toFixed(2)}
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  {paymentQuality.absoluteDelta >= 0 ? 'Pagato in eccesso' : 'Pagato in difetto'} su €{paymentQuality.totalExpectedPaid.toFixed(2)} dovuti
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                <span>Completamento pagamento</span>
+                <span>€{financeSummary.totalReceived.toFixed(2)} / €{paymentQuality.totalExpectedPaid.toFixed(2)}</span>
+              </div>
+              <div style={{ height: '8px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{
+                  width: `${Math.min(paymentQuality.paymentCompletionPct, 100)}%`,
+                  height: '100%',
+                  borderRadius: '4px',
+                  backgroundColor: paymentQuality.paymentCompletionPct >= 100 ? '#10b981' : paymentQuality.paymentCompletionPct >= 80 ? '#f59e0b' : '#ef4444',
+                  transition: 'width 0.4s ease'
+                }} />
+              </div>
+              {paymentQuality.absoluteDelta !== 0 && (
+                <div style={{ marginTop: '10px', fontSize: '12px', fontWeight: '600', padding: '8px 12px', borderRadius: '10px',
+                  backgroundColor: paymentQuality.absoluteDelta > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                  color: paymentQuality.absoluteDelta > 0 ? '#10b981' : '#ef4444'
+                }}>
+                  {paymentQuality.absoluteDelta > 0
+                    ? `🟢 Ricevuto €${paymentQuality.absoluteDelta.toFixed(2)} in più rispetto al dovuto per le ore coperte.`
+                    : `🔴 Ricevuto €${Math.abs(paymentQuality.absoluteDelta).toFixed(2)} in meno rispetto al dovuto per le ore coperte.`
+                  }
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Dettaglio Pagamenti: Modalità Mobile Card vs Table Desktop */}
         <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
