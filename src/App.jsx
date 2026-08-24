@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { LayoutDashboard, BarChart2, Calendar, Settings as SettingsIcon, AlertCircle, Sparkles, Loader2, TrendingUp } from 'lucide-react';
 import Login from './components/Login';
@@ -7,9 +7,13 @@ import Analysis from './components/Analysis';
 import SessionList from './components/SessionList';
 import Settings from './components/Settings';
 import AnalyticsAndFinance from './components/AnalyticsAndFinance';
+import MiniTimerBanner from './components/MiniTimerBanner';
+import TimerHourlyNotifier from './components/TimerHourlyNotifier';
+import { useUIFeedback } from './hooks/useUIFeedback';
 
 
 export default function App() {
+  const { showToast } = useUIFeedback();
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
   const [activeView, setActiveView] = useState('dashboard');
@@ -30,9 +34,6 @@ export default function App() {
     return null;
   });
 
-  // Stato per i secondi trascorsi nel banner mini-timer
-  const [miniElapsedMs, setMiniElapsedMs] = useState(0);
-
   // Sincronizza activeTimer in localStorage
   useEffect(() => {
     if (activeTimer) {
@@ -40,31 +41,6 @@ export default function App() {
     } else {
       localStorage.removeItem('workhours_active_timer');
     }
-  }, [activeTimer]);
-
-  // Aggiorna il contatore del mini-timer fluttuante
-  useEffect(() => {
-    if (!activeTimer) {
-      setMiniElapsedMs(0);
-      return;
-    }
-
-    const updateMiniTimer = () => {
-      const { startTime, isPaused, pausedDurationMs, lastPauseTime } = activeTimer;
-      const start = new Date(startTime).getTime();
-      
-      if (isPaused) {
-        const pauseTime = new Date(lastPauseTime).getTime();
-        setMiniElapsedMs(pauseTime - start - pausedDurationMs);
-      } else {
-        const now = Date.now();
-        setMiniElapsedMs(now - start - pausedDurationMs);
-      }
-    };
-
-    updateMiniTimer();
-    const interval = setInterval(updateMiniTimer, 1000);
-    return () => clearInterval(interval);
   }, [activeTimer]);
 
   // Gestione sessione utente su Supabase o Mock
@@ -152,7 +128,7 @@ export default function App() {
   // --- AZIONI DATABASE / STATE ---
 
   // Salva una nuova sessione (dal timer o dal modulo manuale)
-  const handleSaveSession = async (sessionData) => {
+  const handleSaveSession = useCallback(async (sessionData) => {
     if (!user) return;
 
     try {
@@ -167,7 +143,7 @@ export default function App() {
 
       if (error) {
         console.error('Errore nel salvare la sessione:', error);
-        alert('Errore nel salvare la sessione. Riprova.');
+        showToast('Errore nel salvare la sessione. Riprova.', 'error');
       } else {
         // Se Supabase non ritorna i dati inseriti (dipende da config RLS/versione), ricarichiamo le sessioni
         // Il nostro Mock client restituisce i dati inseriti in un array
@@ -183,14 +159,16 @@ export default function App() {
             .order('start_time', { ascending: false });
           if (refetched) setSessions(refetched);
         }
+        showToast('Sessione salvata con successo.', 'success');
       }
     } catch (err) {
       console.error(err);
+      showToast('Errore nel salvare la sessione. Riprova.', 'error');
     }
-  };
+  }, [user, showToast]);
 
   // Aggiorna una sessione esistente
-  const handleUpdateSession = async (id, updatedData) => {
+  const handleUpdateSession = useCallback(async (id, updatedData) => {
     if (!user) return;
 
     try {
@@ -201,19 +179,29 @@ export default function App() {
 
       if (error) {
         console.error('Errore nell\'aggiornare la sessione:', error);
-        alert('Errore durante la modifica. Riprova.');
+        showToast('Errore durante la modifica. Riprova.', 'error');
       } else {
         // Aggiorna lo stato locale
         setSessions(prev => prev.map(s => s.id === id ? { ...s, ...updatedData } : s));
+        showToast('Sessione modificata con successo.', 'success');
       }
     } catch (err) {
       console.error(err);
+      showToast('Errore durante la modifica. Riprova.', 'error');
     }
-  };
+  }, [user, showToast]);
 
-  // Elimina una sessione
-  const handleDeleteSession = async (id) => {
+  // Elimina una sessione (aggiornamento ottimistico con rollback in caso di errore)
+  const handleDeleteSession = useCallback(async (id) => {
     if (!user) return;
+
+    let removedSession = null;
+    let removedIndex = -1;
+    setSessions(prev => {
+      removedIndex = prev.findIndex(s => s.id === id);
+      removedSession = removedIndex >= 0 ? prev[removedIndex] : null;
+      return prev.filter(s => s.id !== id);
+    });
 
     try {
       const { error } = await supabase
@@ -223,18 +211,33 @@ export default function App() {
 
       if (error) {
         console.error('Errore nell\'eliminare la sessione:', error);
-        alert('Errore durante l\'eliminazione. Riprova.');
+        showToast('Errore durante l\'eliminazione. Riprova.', 'error');
+        // Rollback: ripristina la sessione rimossa localmente
+        if (removedSession) {
+          setSessions(prev => {
+            const next = [...prev];
+            next.splice(Math.min(removedIndex, next.length), 0, removedSession);
+            return next;
+          });
+        }
       } else {
-        // Aggiorna lo stato locale
-        setSessions(prev => prev.filter(s => s.id !== id));
+        showToast('Sessione eliminata.', 'success');
       }
     } catch (err) {
       console.error(err);
+      showToast('Errore durante l\'eliminazione. Riprova.', 'error');
+      if (removedSession) {
+        setSessions(prev => {
+          const next = [...prev];
+          next.splice(Math.min(removedIndex, next.length), 0, removedSession);
+          return next;
+        });
+      }
     }
-  };
+  }, [user, showToast]);
 
   // Aggiorna la tariffa oraria di default
-  const handleUpdateRate = async (newRate) => {
+  const handleUpdateRate = useCallback(async (newRate) => {
     if (!user) return;
 
     try {
@@ -245,7 +248,7 @@ export default function App() {
 
       if (error) {
         console.error('Errore nell\'aggiornare la tariffa:', error);
-        alert('Errore durante il salvataggio della tariffa. Riprova.');
+        showToast('Errore durante il salvataggio della tariffa. Riprova.', 'error');
         throw error;
       } else {
         setHourlyRate(newRate);
@@ -254,20 +257,7 @@ export default function App() {
       console.error(err);
       throw err;
     }
-  };
-
-  // Formatta millisecondi del mini-timer in HH:MM:SS (supporta countdown negativi)
-  const formatMiniElapsed = (ms) => {
-    const isNegative = ms < 0;
-    const absMs = Math.abs(ms);
-    const totalSecs = Math.floor(absMs / 1000);
-    const hours = Math.floor(totalSecs / 3600);
-    const minutes = Math.floor((totalSecs % 3600) / 60);
-    const seconds = totalSecs % 60;
-
-    const pad = (num) => String(num).padStart(2, '0');
-    return `${isNegative ? '-' : ''}${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-  };
+  }, [user, showToast]);
 
   // Sincronizzazione automatica tra le sezioni
   useEffect(() => {
@@ -287,7 +277,7 @@ export default function App() {
   }, [activeView, user]); // Refetch leggero in background quando si cambia schermata
 
   // Sincronizzazione manuale globale
-  const handleRefreshSessions = async () => {
+  const handleRefreshSessions = useCallback(async () => {
     if (!user) return;
     try {
       const { data, error } = await supabase
@@ -296,14 +286,20 @@ export default function App() {
         .eq('user_id', user.id)
         .order('date', { ascending: false })
         .order('start_time', { ascending: false });
-      
+
       if (!error && data) {
         setSessions(data);
       }
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [user]);
+
+  // Gestisce il logout, resettando la sessione locale
+  const handleLogout = useCallback(() => {
+    setSession(null);
+    setUser(null);
+  }, []);
 
   // Renderizza la vista corrente
   const renderView = () => {
@@ -338,10 +334,7 @@ export default function App() {
             hourlyRate={hourlyRate}
             onUpdateRate={handleUpdateRate}
             user={user}
-            onLogout={() => {
-              setSession(null);
-              setUser(null);
-            }}
+            onLogout={handleLogout}
           />
         );
       default:
@@ -377,6 +370,9 @@ export default function App() {
 
   return (
     <div className="app-container">
+      {/* Componente invisibile: notifica ogni ora piena di sessione attiva, indipendentemente dalla vista corrente */}
+      <TimerHourlyNotifier activeTimer={activeTimer} />
+
       {/* Sidebar for Desktop */}
       <aside className="sidebar">
         <div className="sidebar-brand">
@@ -427,34 +423,7 @@ export default function App() {
 
         {/* Banner fluttuante se c'è un timer attivo in background (non nella vista dashboard) */}
         {activeTimer && activeView !== 'dashboard' && (
-          <div style={{ padding: '16px 20px 0 20px' }}>
-            <div className="mini-timer-banner" onClick={() => setActiveView('dashboard')}>
-              <div className="mini-timer-info">
-                <div 
-                  className="mini-timer-pulse" 
-                  style={{ backgroundColor: miniElapsedMs < 0 ? '#d97706' : 'var(--color-brand)' }}
-                ></div>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>
-                    {miniElapsedMs < 0 ? 'Avvio programmato' : 'Sessione in corso'}
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Note: {activeTimer.notes || 'Nessuna'}</div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span 
-                  style={{ 
-                    fontFamily: 'var(--font-heading)', 
-                    fontWeight: '700', 
-                    fontSize: '18px', 
-                    color: miniElapsedMs < 0 ? '#d97706' : 'var(--color-brand)' 
-                  }}
-                >
-                  {formatMiniElapsed(miniElapsedMs)}
-                </span>
-              </div>
-            </div>
-          </div>
+          <MiniTimerBanner activeTimer={activeTimer} onClick={() => setActiveView('dashboard')} />
         )}
 
         {/* Contenuto della vista corrente */}

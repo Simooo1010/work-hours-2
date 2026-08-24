@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { Calendar, DollarSign, ChevronLeft, ChevronRight, TrendingUp, Printer } from 'lucide-react';
 import { roundHours, getRoundedEarnings, formatHoursAndMinutes, getRoundedEndTime } from '../utils/rounding';
 
@@ -30,7 +30,7 @@ const formatDateStr = (dateObj) => {
   return `${y}-${m}-${d}`;
 };
 
-export default function Analysis({ sessions, hourlyRate }) {
+function Analysis({ sessions, hourlyRate }) {
   // Stato per l'applicazione dell'arrotondamento (True per default)
   const [roundingApplied, setRoundingApplied] = useState(true);
 
@@ -858,3 +858,5 @@ export default function Analysis({ sessions, hourlyRate }) {
     </div>
   );
 }
+
+export default memo(Analysis);

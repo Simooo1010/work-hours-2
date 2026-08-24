@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Play, Pause, Square, Edit2, Clock, Coins, Check, AlertCircle, X } from 'lucide-react';
+import React, { useState, useEffect, memo } from 'react';
+import { Play, Pause, Square, Edit2, Clock, Coins, Check, AlertCircle, X, Loader2 } from 'lucide-react';
+import { useUIFeedback } from '../hooks/useUIFeedback';
 
-
-
-export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer }) {
+function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer }) {
+  const { showToast, confirmDialog } = useUIFeedback();
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isEditingStart, setIsEditingStart] = useState(false);
   const [editStartTimeVal, setEditStartTimeVal] = useState('');
@@ -12,6 +12,7 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
   const [showDelayedModal, setShowDelayedModal] = useState(false);
   const [delayedMinutes, setDelayedMinutes] = useState(10);
   const [delayError, setDelayError] = useState('');
+  const [isStopping, setIsStopping] = useState(false);
 
   useEffect(() => {
     const checkIOS = () => {
@@ -47,8 +48,17 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
     return () => clearInterval(interval);
   }, [activeTimer]);
 
+  // Richiede il permesso per le notifiche del browser (deve avvenire durante
+  // un gesto utente diretto, es. il click su "Inizia Sessione")
+  const requestNotificationPermission = () => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
+  };
+
   // Avvia il timer
   const handleStart = () => {
+    requestNotificationPermission();
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
     const initialTimer = {
@@ -65,6 +75,7 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
 
   // Avvia il timer in modo programmato (ritardato di X minuti)
   const handleStartDelayed = (minutes) => {
+    requestNotificationPermission();
     const now = new Date();
     const futureStart = new Date(now.getTime() + minutes * 60 * 1000);
     const todayStr = now.toISOString().split('T')[0];
@@ -109,36 +120,46 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
   };
 
   // Ferma e salva il timer
-  const handleStop = () => {
+  const handleStop = async () => {
     if (!activeTimer) return;
 
     // Se il timer non è ancora iniziato (avvio programmato)
     if (elapsedMs < 0) {
-      if (confirm('Vuoi annullare l\'avvio programmato del timer?')) {
+      const confirmed = await confirmDialog('Vuoi annullare l\'avvio programmato del timer?', {
+        title: 'Annulla avvio programmato',
+        confirmLabel: 'Annulla avvio',
+        danger: true,
+      });
+      if (confirmed) {
         setActiveTimer(null);
       }
       return;
     }
 
     const durationHours = elapsedMs / (1000 * 60 * 60);
-    
+
     // Se la durata è piccolissima (es. meno di 10 secondi), chiediamo conferma o la consideriamo nulla
     if (durationHours < 0.001) {
-      if (confirm('La sessione è troppo breve per essere registrata (meno di 4 secondi). Vuoi annullarla?')) {
+      const confirmed = await confirmDialog('La sessione è troppo breve per essere registrata (meno di 4 secondi). Vuoi annullarla?', {
+        title: 'Sessione troppo breve',
+        confirmLabel: 'Annulla sessione',
+        danger: true,
+      });
+      if (confirmed) {
         setActiveTimer(null);
         return;
       }
     }
 
     const { startTime, pausedDurationMs } = activeTimer;
-    
+
     // Calcoliamo l'orario di fine effettivo
     const startDate = new Date(startTime);
     // L'orario di fine corrisponde a: inizio + durata totale passata + durata delle pause
     const endDate = new Date(startDate.getTime() + elapsedMs + pausedDurationMs);
 
     const pad = (num) => String(num).padStart(2, '0');
-    
+
     const formatTime = (dateObj) => {
       return `${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}:${pad(dateObj.getSeconds())}`;
     };
@@ -156,9 +177,14 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
       notes: notes.trim() || null
     };
 
-    onSaveSession(sessionData);
-    setActiveTimer(null);
-    setNotes('');
+    setIsStopping(true);
+    try {
+      await onSaveSession(sessionData);
+      setActiveTimer(null);
+      setNotes('');
+    } finally {
+      setIsStopping(false);
+    }
   };
 
   // Avvia la modifica dell'ora di inizio al volo
@@ -181,7 +207,7 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
 
     // Se la nuova data d'inizio è nel futuro rispetto a ora, la teniamo a oggi o gestiamo l'errore
     if (newStart.getTime() > Date.now()) {
-      alert("L'ora di inizio non può essere nel futuro.");
+      showToast("L'ora di inizio non può essere nel futuro.", 'error');
       return;
     }
 
@@ -345,25 +371,25 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
 
           <div className="timer-controls">
             {elapsedMs < 0 ? (
-              <button className="btn btn-danger" onClick={handleStop} style={{ flex: 1 }}>
-                <Square size={16} fill="white" />
+              <button className="btn btn-danger" onClick={handleStop} style={{ flex: 1 }} disabled={isStopping}>
+                {isStopping ? <Loader2 size={16} className="animate-spin" /> : <Square size={16} fill="white" />}
                 Annulla Avvio
               </button>
             ) : (
               <>
                 {activeTimer.isPaused ? (
-                  <button className="btn btn-primary" onClick={handleResume} style={{ flex: 1 }}>
+                  <button className="btn btn-primary" onClick={handleResume} style={{ flex: 1 }} disabled={isStopping}>
                     <Play size={16} fill="white" />
                     Riprendi
                   </button>
                 ) : (
-                  <button className="btn btn-secondary" onClick={handlePause} style={{ flex: 1 }}>
+                  <button className="btn btn-secondary" onClick={handlePause} style={{ flex: 1 }} disabled={isStopping}>
                     <Pause size={16} />
                     Pausa
                   </button>
                 )}
-                <button className="btn btn-danger" onClick={handleStop} style={{ flex: 1 }}>
-                  <Square size={16} fill="white" />
+                <button className="btn btn-danger" onClick={handleStop} style={{ flex: 1 }} disabled={isStopping}>
+                  {isStopping ? <Loader2 size={16} className="animate-spin" /> : <Square size={16} fill="white" />}
                   Termina
                 </button>
               </>
@@ -451,3 +477,5 @@ export default function TimerWidget({ hourlyRate, onSaveSession, activeTimer, se
     </div>
   );
 }
+
+export default memo(TimerWidget);

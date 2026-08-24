@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, memo } from 'react';
 import { TrendingUp, Clock, DollarSign, Calendar } from 'lucide-react';
 import TimerWidget from './TimerWidget';
 import { roundHours, getRoundedEarnings, formatHoursAndMinutes } from '../utils/rounding';
 
-export default function Dashboard({ sessions, hourlyRate, activeTimer, setActiveTimer, onSaveSession }) {
+function Dashboard({ sessions, hourlyRate, activeTimer, setActiveTimer, onSaveSession }) {
   
   // Calcolo dei totali storici CON ARROTONDAMENTO applicato (richiesto per la dashboard principale)
   const roundedTotals = useMemo(() => {
@@ -116,3 +116,5 @@ export default function Dashboard({ sessions, hourlyRate, activeTimer, setActive
     </div>
   );
 }
+
+export default memo(Dashboard);

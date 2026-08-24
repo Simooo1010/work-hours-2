@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, Edit2, Calendar, Clock, FileText, X, AlertTriangle } from 'lucide-react';
+import React, { useState, memo } from 'react';
+import { Plus, Trash2, Edit2, Calendar, Clock, FileText, X, AlertTriangle, Loader2 } from 'lucide-react';
 import { roundHours, getRoundedEarnings } from '../utils/rounding';
+import { useUIFeedback } from '../hooks/useUIFeedback';
 
-export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onDeleteSession }) {
+function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onDeleteSession }) {
+  const { confirmDialog } = useUIFeedback();
+
   // Stati per il form di inserimento manuale
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [notes, setNotes] = useState('');
   const [formError, setFormError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Stati per la modifica (Modal)
   const [editingSession, setEditingSession] = useState(null);
@@ -17,6 +21,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
   const [editEndTime, setEditEndTime] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [editError, setEditError] = useState('');
+  const [isEditSubmitting, setIsEditSubmitting] = useState(false);
 
   // Funzione helper per calcolare la durata in ore
   const getDurationHours = (start, end) => {
@@ -58,7 +63,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
   const liveEarnings = liveDuration * hourlyRate;
 
   // Gestione invio form di inserimento manuale
-  const handleAddSessionSubmit = (e) => {
+  const handleAddSessionSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
 
@@ -84,12 +89,16 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
       notes: notes.trim() || null
     };
 
-    onSaveSession(sessionData);
-
-    // Resetta campi
-    setStartTime('');
-    setEndTime('');
-    setNotes('');
+    setIsSubmitting(true);
+    try {
+      await onSaveSession(sessionData);
+      // Resetta campi
+      setStartTime('');
+      setEndTime('');
+      setNotes('');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Apertura modale di modifica
@@ -104,7 +113,7 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
   };
 
   // Gestione salvataggio modifica
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
     setEditError('');
 
@@ -130,13 +139,23 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
       notes: editNotes.trim() || null
     };
 
-    onUpdateSession(editingSession.id, updatedData);
-    setEditingSession(null);
+    setIsEditSubmitting(true);
+    try {
+      await onUpdateSession(editingSession.id, updatedData);
+      setEditingSession(null);
+    } finally {
+      setIsEditSubmitting(false);
+    }
   };
 
   // Gestione eliminazione sessione
-  const handleDeleteClick = (id) => {
-    if (confirm('Sei sicuro di voler eliminare questa sessione di lavoro permanentemente?')) {
+  const handleDeleteClick = async (id) => {
+    const confirmed = await confirmDialog('Sei sicuro di voler eliminare questa sessione di lavoro permanentemente?', {
+      title: 'Elimina sessione',
+      confirmLabel: 'Elimina',
+      danger: true,
+    });
+    if (confirmed) {
       onDeleteSession(id);
     }
   };
@@ -216,9 +235,9 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
             </div>
           )}
 
-          <button type="submit" className="btn btn-primary" style={{ marginTop: '4px' }}>
-            <Plus size={16} />
-            Salva Sessione
+          <button type="submit" className="btn btn-primary" style={{ marginTop: '4px' }} disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+            {isSubmitting ? 'Salvataggio...' : 'Salva Sessione'}
           </button>
         </form>
       </div>
@@ -359,11 +378,11 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
               </div>
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setEditingSession(null)} style={{ flex: 1 }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setEditingSession(null)} style={{ flex: 1 }} disabled={isEditSubmitting}>
                   Annulla
                 </button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                  Salva Modifiche
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={isEditSubmitting}>
+                  {isEditSubmitting ? <Loader2 size={16} className="animate-spin" /> : 'Salva Modifiche'}
                 </button>
               </div>
             </form>
@@ -373,3 +392,5 @@ export default function SessionList({ sessions, hourlyRate, onSaveSession, onUpd
     </div>
   );
 }
+
+export default memo(SessionList);

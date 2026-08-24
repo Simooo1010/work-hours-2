@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { DollarSign, Database, LogOut, Smartphone, Globe, Key, Shield, Sparkles, Check } from 'lucide-react';
+import React, { useState, memo } from 'react';
+import { DollarSign, Database, LogOut, Smartphone, Globe, Key, Shield, Sparkles, Check, Loader2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+import { useUIFeedback } from '../hooks/useUIFeedback';
 
-export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
+function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
+  const { showToast, confirmDialog } = useUIFeedback();
   const [rateInput, setRateInput] = useState(hourlyRate.toFixed(2));
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -11,19 +13,19 @@ export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
 
   const handleRateSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setIsSaved(false);
 
     const newRate = parseFloat(rateInput);
     if (isNaN(newRate) || newRate < 0) {
-      alert("Inserisci una tariffa oraria valida.");
-      setLoading(false);
+      showToast('Inserisci una tariffa oraria valida.', 'error');
       return;
     }
 
+    setLoading(true);
     try {
       await onUpdateRate(newRate);
       setIsSaved(true);
+      showToast('Tariffa oraria aggiornata con successo.', 'success');
       setTimeout(() => setIsSaved(false), 3000); // Rimuovi il messaggio di successo dopo 3 secondi
     } catch (error) {
       console.error(error);
@@ -33,7 +35,12 @@ export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
   };
 
   const handleLogoutClick = async () => {
-    if (confirm("Sei sicuro di voler uscire?")) {
+    const confirmed = await confirmDialog('Sei sicuro di voler uscire dal tuo account?', {
+      title: 'Esci dall\'account',
+      confirmLabel: 'Esci',
+      danger: true,
+    });
+    if (confirmed) {
       await supabase.auth.signOut();
       onLogout();
     }
@@ -70,7 +77,7 @@ export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
             </div>
           </div>
           <button type="submit" className="btn btn-primary" style={{ width: 'auto', padding: '12px 24px' }} disabled={loading}>
-            {isSaved ? <Check size={16} /> : 'Salva'}
+            {loading ? <Loader2 size={16} className="animate-spin" /> : (isSaved ? <Check size={16} /> : 'Salva')}
           </button>
         </form>
 
@@ -182,3 +189,5 @@ export default function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
     </div>
   );
 }
+
+export default memo(Settings);

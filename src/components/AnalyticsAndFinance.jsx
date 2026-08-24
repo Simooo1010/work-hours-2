@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, memo } from 'react';
 import { 
   TrendingUp, 
   Clock, 
@@ -35,7 +35,7 @@ const MONTHS_IT = [
 
 const WEEKDAYS_IT = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
 
-export default function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
+function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
   // Stato Intervallo Temporale
   const [timeRange, setTimeRange] = useState('mese'); // 'settimana', 'mese', 'anno', 'totale', 'custom'
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -927,6 +927,8 @@ export default function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSes
     </div>
   );
 }
+
+export default memo(AnalyticsAndFinance);
 
 // Stili helper per i badge
 const deltaBadgeStyle = (val) => ({
