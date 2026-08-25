@@ -406,6 +406,125 @@ button:disabled {
 }
 
 /* Forms & Inputs */
+/* ── Session Rate Slider ─────────────────────────────────────────────── */
+.session-rate-slider-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+
+.session-rate-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.session-rate-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.session-rate-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-brand);
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.session-rate-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-left: 2px;
+}
+
+.session-rate-track-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-rate-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    var(--color-brand) 0%,
+    var(--color-brand) calc(var(--pct, 0%) ),
+    var(--border-color) calc(var(--pct, 0%)),
+    var(--border-color) 100%
+  );
+  outline: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.session-rate-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-brand);
+  border: 3px solid var(--bg-secondary);
+  box-shadow: 0 2px 8px rgba(77, 96, 85, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+}
+
+.session-rate-input::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-brand);
+  border: 3px solid var(--bg-secondary);
+  box-shadow: 0 2px 8px rgba(77, 96, 85, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+}
+
+.session-rate-input:active::-webkit-slider-thumb {
+  transform: scale(1.25);
+  box-shadow: 0 4px 14px rgba(77, 96, 85, 0.45);
+}
+
+.session-rate-input:active::-moz-range-thumb {
+  transform: scale(1.25);
+  box-shadow: 0 4px 14px rgba(77, 96, 85, 0.45);
+}
+
+.session-rate-ticks {
+  display: flex;
+  justify-content: space-between;
+}
+
+.session-rate-tick {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.session-rate-tick.active {
+  color: var(--color-brand);
+  transform: scale(1.1);
+}
+
+/* ── end Session Rate Slider ─────────────────────────────────────────── */
+
 .form-group {
   display: flex;
   flex-direction: column;

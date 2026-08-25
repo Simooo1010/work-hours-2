@@ -1,6 +1,9 @@
 import React, { useState, useEffect, memo } from 'react';
 import { Play, Pause, Square, Edit2, Clock, Coins, Check, AlertCircle, X, Loader2 } from 'lucide-react';
 import { useUIFeedback } from '../hooks/useUIFeedback';
+import { roundToQuarterEuro } from '../utils/rounding';
+
+const RATE_STEPS = [2.5, 2.6, 2.7, 2.8, 2.9, 3.0];
 
 function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer }) {
   const { showToast, confirmDialog } = useUIFeedback();
@@ -13,6 +16,9 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
   const [delayedMinutes, setDelayedMinutes] = useState(10);
   const [delayError, setDelayError] = useState('');
   const [isStopping, setIsStopping] = useState(false);
+  const defaultRateIndex = RATE_STEPS.indexOf(hourlyRate) !== -1 ? RATE_STEPS.indexOf(hourlyRate) : 0;
+  const [sessionRateIndex, setSessionRateIndex] = useState(defaultRateIndex);
+  const sessionRate = RATE_STEPS[sessionRateIndex];
 
   useEffect(() => {
     const checkIOS = () => {
@@ -172,8 +178,8 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
       start_time: startTimeFormatted,
       end_time: endTimeFormatted,
       duration_hours: durationHours,
-      hourly_rate: hourlyRate,
-      earnings: durationHours * hourlyRate,
+      hourly_rate: sessionRate,
+      earnings: roundToQuarterEuro(durationHours * sessionRate),
       notes: notes.trim() || null
     };
 
@@ -246,7 +252,7 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
   };
 
   // Guadagno accumulato stimato (evita valori inferiori a zero durante il countdown)
-  const estimatedEarnings = Math.max(0, (elapsedMs / (1000 * 60 * 60)) * hourlyRate);
+  const estimatedEarnings = Math.max(0, (elapsedMs / (1000 * 60 * 60)) * sessionRate);
 
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -354,6 +360,37 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Slider tariffa oraria per questa sessione */}
+          <div className="session-rate-slider-wrap">
+            <div className="session-rate-slider-header">
+              <span className="session-rate-label">Tariffa sessione</span>
+              <span className="session-rate-value">€{sessionRate.toFixed(2)}<span className="session-rate-unit">/h</span></span>
+            </div>
+            <div className="session-rate-track-wrap">
+              <input
+                type="range"
+                className="session-rate-input"
+                min={0}
+                max={RATE_STEPS.length - 1}
+                step={1}
+                value={sessionRateIndex}
+                onChange={(e) => setSessionRateIndex(Number(e.target.value))}
+                style={{ '--pct': `${(sessionRateIndex / (RATE_STEPS.length - 1)) * 100}%` }}
+              />
+              <div className="session-rate-ticks">
+                {RATE_STEPS.map((r, i) => (
+                  <span
+                    key={r}
+                    className={`session-rate-tick${i === sessionRateIndex ? ' active' : ''}`}
+                    onClick={() => setSessionRateIndex(i)}
+                  >
+                    {r.toFixed(1)}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
