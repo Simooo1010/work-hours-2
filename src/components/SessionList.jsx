@@ -1,7 +1,8 @@
 import React, { useState, memo } from 'react';
 import { Plus, Trash2, Edit2, Calendar, Clock, FileText, X, AlertTriangle, Loader2 } from 'lucide-react';
-import { roundHours, getRoundedEarnings } from '../utils/rounding';
+import { roundHours, getRoundedEarnings, roundToQuarterEuro } from '../utils/rounding';
 import { useUIFeedback } from '../hooks/useUIFeedback';
+import RateSlider, { RATE_STEPS, rateToIndex } from './RateSlider';
 
 function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onDeleteSession }) {
   const { confirmDialog } = useUIFeedback();
@@ -20,6 +21,7 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
   const [editStartTime, setEditStartTime] = useState('');
   const [editEndTime, setEditEndTime] = useState('');
   const [editNotes, setEditNotes] = useState('');
+  const [editRate, setEditRate] = useState(RATE_STEPS[0]);
   const [editError, setEditError] = useState('');
   const [isEditSubmitting, setIsEditSubmitting] = useState(false);
 
@@ -85,7 +87,7 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
       end_time: `${endTime}:00`,
       duration_hours: durationHours,
       hourly_rate: hourlyRate,
-      earnings: durationHours * hourlyRate,
+      earnings: roundToQuarterEuro(durationHours * hourlyRate),
       notes: notes.trim() || null
     };
 
@@ -105,10 +107,10 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
   const handleOpenEditModal = (session) => {
     setEditingSession(session);
     setEditDate(session.date);
-    // Rimuoviamo i secondi per gli input time
     setEditStartTime(session.start_time.substring(0, 5));
     setEditEndTime(session.end_time.substring(0, 5));
     setEditNotes(session.notes || '');
+    setEditRate(RATE_STEPS[rateToIndex(session.hourly_rate)]);
     setEditError('');
   };
 
@@ -133,9 +135,8 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
       start_time: `${editStartTime}:00`,
       end_time: `${editEndTime}:00`,
       duration_hours: durationHours,
-      // Manteniamo la tariffa oraria originaria della sessione
-      hourly_rate: editingSession.hourly_rate,
-      earnings: durationHours * editingSession.hourly_rate,
+      hourly_rate: editRate,
+      earnings: roundToQuarterEuro(durationHours * editRate),
       notes: editNotes.trim() || null
     };
 
@@ -373,9 +374,7 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
                 />
               </div>
 
-              <div className="db-info-box" style={{ fontSize: '12px' }}>
-                <span>Tariffa della sessione: <strong>€{Number(editingSession.hourly_rate).toFixed(2)} / ora</strong>. Questa tariffa non cambia per preservare lo storico dei tuoi guadagni.</span>
-              </div>
+              <RateSlider value={editRate} onChange={setEditRate} />
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setEditingSession(null)} style={{ flex: 1 }} disabled={isEditSubmitting}>

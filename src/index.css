@@ -60,6 +60,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Push the document below the iOS status bar so sticky header lands correctly */
+html {
+  padding-top: env(safe-area-inset-top, 0px);
+  background-color: var(--bg-secondary);
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -202,16 +208,15 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Common UI Elements */
 .header {
-  /* Su iPhone (PWA standalone) evita che l'header finisca sotto l'orologio,
-     la batteria e il segnale nella barra di stato del sistema. */
-  padding: calc(20px + env(safe-area-inset-top)) 24px 16px 24px;
+  padding: 16px 24px 14px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-secondary);
   position: sticky;
-  top: 0;
+  /* Stick below the status bar, not at y=0 behind it */
+  top: env(safe-area-inset-top, 0px);
   z-index: 90;
 }
 
@@ -406,8 +411,8 @@ button:disabled {
 }
 
 /* Forms & Inputs */
-/* ── Session Rate Slider ─────────────────────────────────────────────── */
-.session-rate-slider-wrap {
+/* ── Rate Slider ─────────────────────────────────────────────────────── */
+.rate-slider-wrap {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -417,19 +422,19 @@ button:disabled {
   padding: 14px 16px;
 }
 
-.session-rate-slider-header {
+.rate-slider-header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
 }
 
-.session-rate-label {
+.rate-slider-label {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
-.session-rate-value {
+.rate-slider-value {
   font-size: 22px;
   font-weight: 700;
   color: var(--color-brand);
@@ -437,93 +442,102 @@ button:disabled {
   line-height: 1;
 }
 
-.session-rate-unit {
+.rate-slider-unit {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
   margin-left: 2px;
 }
 
-.session-rate-track-wrap {
+.rate-slider-track-area {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  position: relative;
 }
 
-.session-rate-input {
+/* Grey track, white pill thumb with drop shadow */
+.rate-slider-input {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 4px;
+  height: 6px;
   border-radius: 9999px;
-  background: linear-gradient(
-    to right,
-    var(--color-brand) 0%,
-    var(--color-brand) calc(var(--pct, 0%) ),
-    var(--border-color) calc(var(--pct, 0%)),
-    var(--border-color) 100%
-  );
+  background: var(--border-color);
   outline: none;
   border: none;
   padding: 0;
   cursor: pointer;
-  transition: background 0.2s ease;
 }
 
-.session-rate-input::-webkit-slider-thumb {
+.rate-slider-input::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: var(--color-brand);
-  border: 3px solid var(--bg-secondary);
-  box-shadow: 0 2px 8px rgba(77, 96, 85, 0.35);
-  cursor: pointer;
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.14);
+  cursor: grab;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.15s ease;
 }
 
-.session-rate-input::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
+.rate-slider-input::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.14);
+  cursor: grab;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.15s ease;
+}
+
+.rate-slider-input:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.rate-slider-input:active::-moz-range-thumb {
+  cursor: grabbing;
+  transform: scale(1.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+/* Dot markers below the track */
+.rate-slider-dots-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 13px;
+}
+
+.rate-slider-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--border-color);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.rate-slider-dot.active {
   background: var(--color-brand);
-  border: 3px solid var(--bg-secondary);
-  box-shadow: 0 2px 8px rgba(77, 96, 85, 0.35);
-  cursor: pointer;
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+  transform: scale(1.5);
 }
 
-.session-rate-input:active::-webkit-slider-thumb {
-  transform: scale(1.25);
-  box-shadow: 0 4px 14px rgba(77, 96, 85, 0.45);
-}
-
-.session-rate-input:active::-moz-range-thumb {
-  transform: scale(1.25);
-  box-shadow: 0 4px 14px rgba(77, 96, 85, 0.45);
-}
-
-.session-rate-ticks {
+.rate-slider-labels {
   display: flex;
   justify-content: space-between;
 }
 
-.session-rate-tick {
+.rate-slider-end-label {
   font-size: 11px;
   font-weight: 600;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: color 0.15s ease, transform 0.15s ease;
-  user-select: none;
-  -webkit-user-select: none;
+  color: var(--text-muted);
 }
-
-.session-rate-tick.active {
-  color: var(--color-brand);
-  transform: scale(1.1);
-}
-
-/* ── end Session Rate Slider ─────────────────────────────────────────── */
+/* ── end Rate Slider ─────────────────────────────────────────────────── */
 
 .form-group {
   display: flex;
@@ -1265,7 +1279,7 @@ input:focus, select:focus, textarea:focus {
     gap: 24px;
   }
   .header {
-    padding: calc(20px + env(safe-area-inset-top)) 32px 16px 32px;
+    padding: 16px 32px 14px 32px;
   }
   
   .dashboard-grid {
@@ -1633,7 +1647,7 @@ input:focus, select:focus, textarea:focus {
     padding: 0 16px;
   }
   .header {
-    padding: calc(16px + env(safe-area-inset-top)) 16px 12px 16px;
+    padding: 14px 16px 12px 16px;
   }
   .nav-bar {
     height: 60px;
@@ -1683,6 +1697,7 @@ input:focus, select:focus, textarea:focus {
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
+    background-color: var(--bg-secondary); /* Keep status-bar area matching header */
   }
   
   :root {
