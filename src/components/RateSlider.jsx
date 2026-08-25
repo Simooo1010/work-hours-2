@@ -28,21 +28,23 @@ export default function RateSlider({ value, onChange }) {
       </div>
 
       <div className="rate-slider-track-area">
-        <input
-          type="range"
-          className="rate-slider-input"
-          min={0}
-          max={RATE_STEPS.length - 1}
-          step={1}
-          value={index}
-          onChange={(e) => onChange(RATE_STEPS[Number(e.target.value)])}
-        />
+        <div className="rate-slider-track">
+          {/* Dot markers at each step position, layered behind the thumb */}
+          <div className="rate-slider-dots-row" aria-hidden>
+            {RATE_STEPS.map((_, i) => (
+              <span key={i} className={`rate-slider-dot${i === index ? ' active' : ''}`} />
+            ))}
+          </div>
 
-        {/* Dot markers at each step position */}
-        <div className="rate-slider-dots-row" aria-hidden>
-          {RATE_STEPS.map((_, i) => (
-            <span key={i} className={`rate-slider-dot${i === index ? ' active' : ''}`} />
-          ))}
+          <input
+            type="range"
+            className="rate-slider-input"
+            min={0}
+            max={RATE_STEPS.length - 1}
+            step={1}
+            value={index}
+            onChange={(e) => onChange(RATE_STEPS[Number(e.target.value)])}
+          />
         </div>
 
         <div className="rate-slider-labels">

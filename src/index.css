@@ -455,79 +455,107 @@ button:disabled {
 .rate-slider-track-area {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   position: relative;
 }
 
-/* Grey track, white pill thumb with drop shadow */
+/* Pill-shaped track that contains the pill thumb, Claude-effort-slider style:
+   thumb height == track height so it sits flush, no floating circle. */
+.rate-slider-track {
+  position: relative;
+  height: 40px;
+  border-radius: 9999px;
+  background: var(--border-color);
+}
+
+/* Step dots layered inside the track; thumb-width padding keeps them
+   aligned with the native thumb's travel positions (browsers inset the
+   thumb's center by half its width at each end). */
+.rate-slider-dots-row {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 29px;
+  pointer-events: none;
+}
+
+.rate-slider-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+.rate-slider-dot.active {
+  opacity: 0;
+}
+
 .rate-slider-input {
   -webkit-appearance: none;
   appearance: none;
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 6px;
-  border-radius: 9999px;
-  background: var(--border-color);
+  height: 40px;
+  margin: 0;
+  background: transparent;
   outline: none;
   border: none;
   padding: 0;
   cursor: pointer;
 }
 
+.rate-slider-input::-webkit-slider-runnable-track {
+  height: 40px;
+  background: transparent;
+  border-radius: 9999px;
+}
+
+.rate-slider-input::-moz-range-track {
+  height: 40px;
+  background: transparent;
+  border-radius: 9999px;
+}
+
 .rate-slider-input::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  width: 58px;
+  height: 40px;
+  border-radius: 9999px;
   background: #ffffff;
   border: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.14);
   cursor: grab;
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+  transition: left 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.15s ease,
               box-shadow 0.15s ease;
 }
 
 .rate-slider-input::-moz-range-thumb {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  width: 58px;
+  height: 40px;
+  border-radius: 9999px;
   background: #ffffff;
   border: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.14);
   cursor: grab;
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .rate-slider-input:active::-webkit-slider-thumb {
   cursor: grabbing;
-  transform: scale(1.12);
+  transform: scale(0.97);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
 .rate-slider-input:active::-moz-range-thumb {
   cursor: grabbing;
-  transform: scale(1.12);
+  transform: scale(0.97);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.18);
-}
-
-/* Dot markers below the track */
-.rate-slider-dots-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 13px;
-}
-
-.rate-slider-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--border-color);
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.rate-slider-dot.active {
-  background: var(--color-brand);
-  transform: scale(1.5);
 }
 
 .rate-slider-labels {
