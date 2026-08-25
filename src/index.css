@@ -145,9 +145,6 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0 12px;
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
   }
-  .form-row {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 
 .nav-item {
@@ -463,8 +460,8 @@ button:disabled {
    thumb height == track height so it sits flush, no floating circle. */
 .rate-slider-track {
   position: relative;
-  height: 40px;
-  border-radius: 9999px;
+  height: 34px;
+  border-radius: 14px;
   background: var(--border-color);
 }
 
@@ -477,7 +474,7 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 29px;
+  padding: 0 26px;
   pointer-events: none;
 }
 
@@ -500,7 +497,7 @@ button:disabled {
   position: absolute;
   inset: 0;
   width: 100%;
-  height: 40px;
+  height: 34px;
   margin: 0;
   background: transparent;
   outline: none;
@@ -510,22 +507,22 @@ button:disabled {
 }
 
 .rate-slider-input::-webkit-slider-runnable-track {
-  height: 40px;
+  height: 34px;
   background: transparent;
-  border-radius: 9999px;
+  border-radius: 14px;
 }
 
 .rate-slider-input::-moz-range-track {
-  height: 40px;
+  height: 34px;
   background: transparent;
-  border-radius: 9999px;
+  border-radius: 14px;
 }
 
 .rate-slider-input::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 58px;
-  height: 40px;
-  border-radius: 9999px;
+  width: 52px;
+  height: 34px;
+  border-radius: 10px;
   background: #ffffff;
   border: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.14);
@@ -536,9 +533,9 @@ button:disabled {
 }
 
 .rate-slider-input::-moz-range-thumb {
-  width: 58px;
-  height: 40px;
-  border-radius: 9999px;
+  width: 52px;
+  height: 34px;
+  border-radius: 10px;
   background: #ffffff;
   border: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.14);
@@ -580,10 +577,7 @@ button:disabled {
 
 .form-row {
   display: grid;
-  /* Stacked by default: iOS's native time-picker control has a wide
-     intrinsic minimum width that overflows a 50% column, making the two
-     inputs visually merge into one oversized box. */
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
   width: 100%;
 }

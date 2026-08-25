@@ -3,6 +3,7 @@ import { Plus, Trash2, Edit2, Calendar, Clock, FileText, X, AlertTriangle, Loade
 import { roundHours, getRoundedEarnings, roundToQuarterEuro } from '../utils/rounding';
 import { useUIFeedback } from '../hooks/useUIFeedback';
 import RateSlider, { RATE_STEPS, rateToIndex } from './RateSlider';
+import TimeInput from './TimeInput';
 
 function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onDeleteSession }) {
   const { confirmDialog } = useUIFeedback();
@@ -192,23 +193,11 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="startTime">Inizio</label>
-              <input
-                id="startTime"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
-              />
+              <TimeInput id="startTime" value={startTime} onChange={setStartTime} required />
             </div>
             <div className="form-group">
               <label htmlFor="endTime">Fine</label>
-              <input
-                id="endTime"
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                required
-              />
+              <TimeInput id="endTime" value={endTime} onChange={setEndTime} required />
             </div>
           </div>
 
@@ -344,23 +333,11 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="editStartTime">Ora Inizio</label>
-                  <input
-                    id="editStartTime"
-                    type="time"
-                    value={editStartTime}
-                    onChange={(e) => setEditStartTime(e.target.value)}
-                    required
-                  />
+                  <TimeInput id="editStartTime" value={editStartTime} onChange={setEditStartTime} required />
                 </div>
                 <div className="form-group">
                   <label htmlFor="editEndTime">Ora Fine</label>
-                  <input
-                    id="editEndTime"
-                    type="time"
-                    value={editEndTime}
-                    onChange={(e) => setEditEndTime(e.target.value)}
-                    required
-                  />
+                  <TimeInput id="editEndTime" value={editEndTime} onChange={setEditEndTime} required />
                 </div>
               </div>
 

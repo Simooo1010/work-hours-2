@@ -3,6 +3,7 @@ import { Play, Pause, Square, Edit2, Clock, Coins, Check, AlertCircle, X, Loader
 import { useUIFeedback } from '../hooks/useUIFeedback';
 import { roundToQuarterEuro } from '../utils/rounding';
 import RateSlider, { RATE_STEPS, rateToIndex } from './RateSlider';
+import TimeInput from './TimeInput';
 
 function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer }) {
   const { showToast, confirmDialog } = useUIFeedback();
@@ -333,10 +334,9 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
               <span className="stat-lbl">Iniziato alle</span>
               {isEditingStart ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                  <input
-                    type="time"
+                  <TimeInput
                     value={editStartTimeVal}
-                    onChange={(e) => setEditStartTimeVal(e.target.value)}
+                    onChange={setEditStartTimeVal}
                     style={{ padding: '4px 6px', fontSize: '14px', width: '75px', borderRadius: '4px' }}
                   />
                   <button className="btn-icon" onClick={saveAdjustedStart} style={{ width: '28px', height: '28px', backgroundColor: 'var(--color-brand)', color: 'white' }}>
