@@ -1,6 +1,6 @@
 import React, { useState, useMemo, memo } from 'react';
 import { Calendar, DollarSign, ChevronLeft, ChevronRight, TrendingUp, Printer } from 'lucide-react';
-import { roundHours, getRoundedEarnings, formatHoursAndMinutes, getRoundedEndTime } from '../utils/rounding';
+import { roundHours, getRoundedEarnings, roundToQuarterEuro, formatHoursAndMinutes, getRoundedEndTime } from '../utils/rounding';
 
 
 const MONTHS_IT = [
@@ -311,10 +311,10 @@ function Analysis({ sessions, hourlyRate }) {
       rawHours += Number(s.duration_hours);
       const rh = roundHours(Number(s.duration_hours));
       roundedHours += rh;
-      earnings += rh * Number(s.hourly_rate);
+      earnings += roundToQuarterEuro(rh * Number(s.hourly_rate));
     });
-    
-    return { rawHours, roundedHours, earnings, count: exportSessions.length };
+
+    return { rawHours, roundedHours, earnings: roundToQuarterEuro(earnings), count: exportSessions.length };
   }, [exportSessions]);
 
   const handlePrint = () => {

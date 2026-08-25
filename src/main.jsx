@@ -11,3 +11,14 @@ createRoot(document.getElementById('root')).render(
     </UIFeedbackProvider>
   </StrictMode>,
 )
+
+// Registra il service worker: necessario perché le notifiche mostrate tramite
+// showNotification() (più affidabili di `new Notification()` su iOS in
+// modalità PWA standalone) vengano gestite anche a livello di sistema.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((err) => {
+      console.error('Registrazione service worker fallita:', err);
+    });
+  });
+}
