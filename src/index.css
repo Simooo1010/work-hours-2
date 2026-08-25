@@ -145,6 +145,9 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0 12px;
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
   }
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .nav-item {
@@ -549,7 +552,10 @@ button:disabled {
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* Stacked by default: iOS's native time-picker control has a wide
+     intrinsic minimum width that overflows a 50% column, making the two
+     inputs visually merge into one oversized box. */
+  grid-template-columns: 1fr;
   gap: 12px;
   width: 100%;
 }
