@@ -13,8 +13,11 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
   const [notes, setNotes] = useState('');
   const [isIOSDevice, setIsIOSDevice] = useState(false);
   const [showDelayedModal, setShowDelayedModal] = useState(false);
+  const [delayMode, setDelayMode] = useState('minutes'); // 'minutes' | 'atTime'
   const [delayedMinutes, setDelayedMinutes] = useState(10);
   const [delayError, setDelayError] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('');
+  const [scheduledTimeError, setScheduledTimeError] = useState('');
   const [isStopping, setIsStopping] = useState(false);
   const [sessionRate, setSessionRate] = useState(() => RATE_STEPS[rateToIndex(hourlyRate)]);
 
@@ -95,6 +98,30 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
     setIsEditingStart(false);
   };
 
+
+  // Avvia il timer programmato a un'ora esatta (HH:MM)
+  const handleStartAtTime = (timeStr) => {
+    const [h, m] = timeStr.split(':').map(Number);
+    const now = new Date();
+    const target = new Date(now);
+    target.setHours(h, m, 0, 0);
+    // Se l'ora è già passata oggi, programma per domani
+    if (target.getTime() <= now.getTime()) {
+      target.setDate(target.getDate() + 1);
+    }
+    requestNotificationPermission();
+    const todayStr = now.toISOString().split('T')[0];
+    const initialTimer = {
+      startTime: target.toISOString(),
+      isPaused: false,
+      pausedDurationMs: 0,
+      lastPauseTime: null,
+      date: todayStr,
+    };
+    setActiveTimer(initialTimer);
+    setNotes('');
+    setIsEditingStart(false);
+  };
 
   // Metti in pausa il timer
   const handlePause = () => {
@@ -272,40 +299,12 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
               <Play size={20} fill="white" color="white" />
               Inizia Sessione
             </button>
-            <div 
+            <div
               className="btn-split-timer"
-              onClick={!isIOSDevice ? () => { setShowDelayedModal(true); setDelayError(''); } : undefined}
+              onClick={() => { setShowDelayedModal(true); setDelayError(''); setScheduledTimeError(''); }}
               title="Programma avvio sessione"
             >
               <Clock size={20} color="white" />
-              {isIOSDevice && (
-                <select
-                  value=""
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value, 10);
-                    if (val >= 1 && val <= 100) {
-                      handleStartDelayed(val);
-                    }
-                  }}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    opacity: 0,
-                    cursor: 'pointer',
-                    WebkitAppearance: 'menulist-button',
-                  }}
-                >
-                  <option value="" disabled hidden></option>
-                  {Array.from({ length: 100 }, (_, i) => i + 1).map((num) => (
-                    <option key={num} value={num}>
-                      {num}
-                    </option>
-                  ))}
-                </select>
-              )}
             </div>
           </div>
         </div>
@@ -411,66 +410,131 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
                 <Clock size={20} color="var(--color-brand)" />
                 Avvio Temporizzato
               </h3>
-              <button 
-                onClick={() => { setShowDelayedModal(false); setDelayError(''); }} 
+              <button
+                onClick={() => { setShowDelayedModal(false); setDelayError(''); setScheduledTimeError(''); }}
                 style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
               >
                 <X size={20} />
               </button>
             </div>
-            
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '18px', lineHeight: '1.4' }}>
-              Imposta il timer affinché parta automaticamente dopo i minuti selezionati.
-            </p>
-            
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <label htmlFor="delayed-minutes-input" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-primary)' }}>
-                Minuti di attesa (da 1 a 100)
-              </label>
-              <input
-                id="delayed-minutes-input"
-                type="number"
-                min="1"
-                max="100"
-                value={delayedMinutes}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setDelayedMinutes(val);
-                  const parsed = parseInt(val, 10);
-                  if (val && (isNaN(parsed) || parsed < 1 || parsed > 100)) {
-                    setDelayError('Inserisci un numero intero compreso tra 1 e 100.');
-                  } else {
-                    setDelayError('');
-                  }
+
+            {/* Mode tabs */}
+            <div style={{ display: 'flex', gap: '0', marginBottom: '18px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+              <button
+                onClick={() => setDelayMode('minutes')}
+                style={{
+                  flex: 1, padding: '8px 0', fontSize: '13px', fontWeight: '600', cursor: 'pointer', border: 'none',
+                  background: delayMode === 'minutes' ? 'var(--color-brand)' : 'var(--bg-secondary)',
+                  color: delayMode === 'minutes' ? 'white' : 'var(--text-secondary)',
+                  transition: 'background 0.15s, color 0.15s',
                 }}
-                placeholder="Es. 10"
-                style={{ width: '100%', padding: '10px', fontSize: '15px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', outline: 'none' }}
-              />
-              <small style={{ display: 'block', marginTop: '6px', color: delayError ? 'var(--color-danger)' : 'var(--text-secondary)', fontSize: '12px' }}>
-                {delayError || 'L\'intervallo consentito va da 1 a 100 minuti.'}
-              </small>
+              >
+                Tra X minuti
+              </button>
+              <button
+                onClick={() => setDelayMode('atTime')}
+                style={{
+                  flex: 1, padding: '8px 0', fontSize: '13px', fontWeight: '600', cursor: 'pointer', border: 'none',
+                  borderLeft: '1px solid var(--border-color)',
+                  background: delayMode === 'atTime' ? 'var(--color-brand)' : 'var(--bg-secondary)',
+                  color: delayMode === 'atTime' ? 'white' : 'var(--text-secondary)',
+                  transition: 'background 0.15s, color 0.15s',
+                }}
+              >
+                All'ora esatta
+              </button>
             </div>
 
+            {delayMode === 'minutes' ? (
+              <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label htmlFor="delayed-minutes-input" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-primary)' }}>
+                  Minuti di attesa (da 1 a 100)
+                </label>
+                <input
+                  id="delayed-minutes-input"
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={delayedMinutes}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDelayedMinutes(val);
+                    const parsed = parseInt(val, 10);
+                    if (val && (isNaN(parsed) || parsed < 1 || parsed > 100)) {
+                      setDelayError('Inserisci un numero intero compreso tra 1 e 100.');
+                    } else {
+                      setDelayError('');
+                    }
+                  }}
+                  placeholder="Es. 10"
+                  style={{ width: '100%', padding: '10px', fontSize: '15px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', outline: 'none' }}
+                />
+                <small style={{ display: 'block', marginTop: '6px', color: delayError ? 'var(--color-danger)' : 'var(--text-secondary)', fontSize: '12px' }}>
+                  {delayError || 'L\'intervallo consentito va da 1 a 100 minuti.'}
+                </small>
+              </div>
+            ) : (
+              <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label htmlFor="scheduled-time-input" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', display: 'block', color: 'var(--text-primary)' }}>
+                  Ora di inizio (HH:MM)
+                </label>
+                <TimeInput
+                  id="scheduled-time-input"
+                  value={scheduledTime}
+                  onChange={(val) => {
+                    setScheduledTime(val);
+                    setScheduledTimeError('');
+                  }}
+                  style={{ width: '100%', padding: '10px', fontSize: '15px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', outline: 'none', boxSizing: 'border-box' }}
+                />
+                <small style={{ display: 'block', marginTop: '6px', color: scheduledTimeError ? 'var(--color-danger)' : 'var(--text-secondary)', fontSize: '12px' }}>
+                  {scheduledTimeError || (scheduledTime && scheduledTime.length === 5
+                    ? (() => {
+                        const [h, m] = scheduledTime.split(':').map(Number);
+                        const now = new Date();
+                        const target = new Date(now);
+                        target.setHours(h, m, 0, 0);
+                        if (target.getTime() <= now.getTime()) target.setDate(target.getDate() + 1);
+                        const diffMs = target.getTime() - now.getTime();
+                        const diffMin = Math.round(diffMs / 60000);
+                        const hrs = Math.floor(diffMin / 60);
+                        const mins = diffMin % 60;
+                        const when = target.getDate() !== now.getDate() ? 'domani' : 'oggi';
+                        return `Avvio ${when} alle ${scheduledTime} (tra ${hrs > 0 ? `${hrs}h ` : ''}${mins}min)`;
+                      })()
+                    : 'Inserisci l\'ora in formato HH:MM.')}
+                </small>
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button 
-                className="btn btn-secondary" 
-                onClick={() => { setShowDelayedModal(false); setDelayError(''); }} 
+              <button
+                className="btn btn-secondary"
+                onClick={() => { setShowDelayedModal(false); setDelayError(''); setScheduledTimeError(''); }}
                 style={{ flex: 1, height: '40px', padding: '0 12px', fontSize: '14px' }}
               >
                 Annulla
               </button>
-              <button 
-                className="btn btn-primary" 
+              <button
+                className="btn btn-primary"
                 onClick={() => {
-                  const val = parseInt(delayedMinutes, 10);
-                  if (isNaN(val) || val < 1 || val > 100) {
-                    setDelayError('Inserisci un numero valido compreso tra 1 e 100.');
-                    return;
+                  if (delayMode === 'minutes') {
+                    const val = parseInt(delayedMinutes, 10);
+                    if (isNaN(val) || val < 1 || val > 100) {
+                      setDelayError('Inserisci un numero valido compreso tra 1 e 100.');
+                      return;
+                    }
+                    handleStartDelayed(val);
+                  } else {
+                    if (!scheduledTime || scheduledTime.length < 5) {
+                      setScheduledTimeError('Inserisci un\'ora valida in formato HH:MM.');
+                      return;
+                    }
+                    handleStartAtTime(scheduledTime);
                   }
-                  handleStartDelayed(val);
                   setShowDelayedModal(false);
                 }}
-                disabled={!!delayError || !delayedMinutes}
+                disabled={delayMode === 'minutes' ? (!!delayError || !delayedMinutes) : (!scheduledTime || scheduledTime.length < 5)}
                 style={{ flex: 1, height: '40px', padding: '0 12px', fontSize: '14px' }}
               >
                 Avvia
