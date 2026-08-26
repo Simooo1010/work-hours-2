@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { LayoutDashboard, BarChart2, Calendar, Settings as SettingsIcon, AlertCircle, Sparkles, Loader2, TrendingUp } from 'lucide-react';
 import Login from './components/Login';
@@ -20,6 +20,10 @@ export default function App() {
   const [sessions, setSessions] = useState([]);
   const [hourlyRate, setHourlyRate] = useState(2.50);
   const [loading, setLoading] = useState(true);
+  // Contatore usato per scartare risposte di sincronizzazione arrivate fuori
+  // ordine (es. cambio rapido tra sezioni): solo la risposta alla richiesta
+  // più recente può aggiornare lo stato.
+  const syncRequestIdRef = useRef(0);
 
   // Stato per il timer attivo (sollevato in App.jsx per l'indicatore fluttuante)
   const [activeTimer, setActiveTimer] = useState(() => {
@@ -172,17 +176,42 @@ export default function App() {
     if (!user) return;
 
     try {
+      // .select() è indispensabile: senza di esso Supabase risponde con
+      // data = null e error = null anche quando 0 righe sono state modificate
+      // (id inesistente, sessione di un altro utente, RLS che blocca silenziosamente).
+      // Senza questo controllo l'app mostrava "successo" e aggiornava lo stato
+      // locale anche quando la modifica non era MAI stata scritta sul database:
+      // al cambio di sezione successivo la sincronizzazione automatica
+      // (vedi useEffect qui sotto) ricaricava i dati reali e la modifica
+      // spariva silenziosamente, dando l'impressione che "a volte funzioni e a volte no".
       const { data, error } = await supabase
         .from('sessions')
         .update(updatedData)
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select();
 
       if (error) {
         console.error('Errore nell\'aggiornare la sessione:', error);
         showToast('Errore durante la modifica. Riprova.', 'error');
+      } else if (!data || data.length === 0) {
+        // La query non ha modificato nessuna riga: la sessione non esiste
+        // (più) o non appartiene all'utente. Risincronizziamo lo stato con
+        // il database reale invece di lasciare l'interfaccia in uno stato
+        // ottimistico ma falso.
+        console.error('Aggiornamento sessione fallito: nessuna riga modificata per id', id);
+        showToast('Modifica non salvata: la sessione non è stata trovata. Sincronizzazione in corso...', 'error');
+        const { data: refetched } = await supabase
+          .from('sessions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('date', { ascending: false })
+          .order('start_time', { ascending: false });
+        if (refetched) setSessions(refetched);
       } else {
-        // Aggiorna lo stato locale
-        setSessions(prev => prev.map(s => s.id === id ? { ...s, ...updatedData } : s));
+        // Usiamo la riga effettivamente restituita dal database come fonte
+        // di verità, non semplicemente i dati inviati.
+        setSessions(prev => prev.map(s => s.id === id ? { ...s, ...data[0] } : s));
         showToast('Sessione modificata con successo.', 'success');
       }
     } catch (err) {
@@ -204,13 +233,19 @@ export default function App() {
     });
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('sessions')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select();
 
-      if (error) {
-        console.error('Errore nell\'eliminare la sessione:', error);
+      if (error || !data || data.length === 0) {
+        if (error) {
+          console.error('Errore nell\'eliminare la sessione:', error);
+        } else {
+          console.error('Eliminazione sessione fallita: nessuna riga eliminata per id', id);
+        }
         showToast('Errore durante l\'eliminazione. Riprova.', 'error');
         // Rollback: ripristina la sessione rimossa localmente
         if (removedSession) {
@@ -262,6 +297,7 @@ export default function App() {
   // Sincronizzazione automatica tra le sezioni
   useEffect(() => {
     if (user && !loading) {
+      const requestId = ++syncRequestIdRef.current;
       supabase
         .from('sessions')
         .select('*')
@@ -269,6 +305,10 @@ export default function App() {
         .order('date', { ascending: false })
         .order('start_time', { ascending: false })
         .then(({ data, error }) => {
+          // Scarta la risposta se nel frattempo è partita una richiesta più recente
+          // (es. l'utente ha cambiato sezione più volte rapidamente): altrimenti una
+          // risposta lenta e "vecchia" potrebbe sovrascrivere dati più aggiornati.
+          if (requestId !== syncRequestIdRef.current) return;
           if (!error && data) {
             setSessions(data);
           }
@@ -279,6 +319,7 @@ export default function App() {
   // Sincronizzazione manuale globale
   const handleRefreshSessions = useCallback(async () => {
     if (!user) return;
+    const requestId = ++syncRequestIdRef.current;
     try {
       const { data, error } = await supabase
         .from('sessions')
@@ -287,6 +328,7 @@ export default function App() {
         .order('date', { ascending: false })
         .order('start_time', { ascending: false });
 
+      if (requestId !== syncRequestIdRef.current) return;
       if (!error && data) {
         setSessions(data);
       }
