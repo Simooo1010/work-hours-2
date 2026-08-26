@@ -4,6 +4,7 @@ import { roundHours, getRoundedEarnings, roundToQuarterEuro } from '../utils/rou
 import { useUIFeedback } from '../hooks/useUIFeedback';
 import RateSlider, { RATE_STEPS, rateToIndex } from './RateSlider';
 import TimeInput from './TimeInput';
+import DateInput from './DateInput';
 
 function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onDeleteSession }) {
   const { confirmDialog } = useUIFeedback();
@@ -195,13 +196,7 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
         <form onSubmit={handleAddSessionSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div className="form-group">
             <label htmlFor="date">Data</label>
-            <input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
+            <DateInput id="date" value={date} onChange={setDate} required />
           </div>
 
           <div className="form-row">
@@ -335,13 +330,7 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
             <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div className="form-group">
                 <label htmlFor="editDate">Data</label>
-                <input
-                  id="editDate"
-                  type="date"
-                  value={editDate}
-                  onChange={(e) => setEditDate(e.target.value)}
-                  required
-                />
+                <DateInput id="editDate" value={editDate} onChange={setEditDate} required />
               </div>
 
               <div className="form-row">
