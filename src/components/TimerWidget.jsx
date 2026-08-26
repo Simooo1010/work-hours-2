@@ -17,6 +17,11 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
   const [delayError, setDelayError] = useState('');
   const [isStopping, setIsStopping] = useState(false);
   const [sessionRate, setSessionRate] = useState(() => RATE_STEPS[rateToIndex(hourlyRate)]);
+  // Se l'utente non tocca lo slider, la sessione deve usare la tariffa di
+  // default esatta del profilo (che può avere precisione arbitraria, es.
+  // €2.53 impostata in Impostazioni) invece del valore arrotondato allo
+  // step più vicino tra i 6 dello slider.
+  const [sessionRateTouched, setSessionRateTouched] = useState(false);
 
   useEffect(() => {
     const checkIOS = () => {
@@ -75,6 +80,8 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
     setActiveTimer(initialTimer);
     setNotes('');
     setIsEditingStart(false);
+    setSessionRate(RATE_STEPS[rateToIndex(hourlyRate)]);
+    setSessionRateTouched(false);
   };
 
   // Avvia il timer in modo programmato (ritardato di X minuti)
@@ -93,6 +100,8 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
     setActiveTimer(initialTimer);
     setNotes('');
     setIsEditingStart(false);
+    setSessionRate(RATE_STEPS[rateToIndex(hourlyRate)]);
+    setSessionRateTouched(false);
   };
 
 
@@ -171,13 +180,15 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
     const startTimeFormatted = formatTime(startDate);
     const endTimeFormatted = formatTime(endDate);
 
+    const effectiveRate = sessionRateTouched ? sessionRate : Number(hourlyRate);
+
     const sessionData = {
       date: activeTimer.date,
       start_time: startTimeFormatted,
       end_time: endTimeFormatted,
       duration_hours: durationHours,
-      hourly_rate: sessionRate,
-      earnings: roundToQuarterEuro(durationHours * sessionRate),
+      hourly_rate: effectiveRate,
+      earnings: roundToQuarterEuro(durationHours * effectiveRate),
       notes: notes.trim() || null
     };
 
@@ -250,7 +261,7 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
   };
 
   // Guadagno accumulato stimato (evita valori inferiori a zero durante il countdown)
-  const estimatedEarnings = Math.max(0, (elapsedMs / (1000 * 60 * 60)) * sessionRate);
+  const estimatedEarnings = Math.max(0, (elapsedMs / (1000 * 60 * 60)) * (sessionRateTouched ? sessionRate : Number(hourlyRate)));
 
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -360,7 +371,10 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
             </div>
           </div>
 
-          <RateSlider value={sessionRate} onChange={setSessionRate} />
+          <RateSlider
+            value={sessionRate}
+            onChange={(rate) => { setSessionRate(rate); setSessionRateTouched(true); }}
+          />
 
           <div className="form-group" style={{ width: '100%', marginBottom: '0' }}>
             <label htmlFor="timer-notes">Note sulla sessione (opzionale)</label>

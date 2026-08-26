@@ -23,6 +23,13 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
   const [editEndTime, setEditEndTime] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [editRate, setEditRate] = useState(RATE_STEPS[0]);
+  // Traccia se l'utente ha effettivamente spostato lo slider della tariffa in
+  // questa apertura del modale: senza questo, salvare una modifica che non
+  // tocca la tariffa (es. solo l'orario) sovrascriveva silenziosamente
+  // hourly_rate/earnings con il valore più vicino tra i 6 step dello slider,
+  // corrompendo sessioni la cui tariffa reale non cadeva esattamente su uno
+  // di quegli step.
+  const [editRateTouched, setEditRateTouched] = useState(false);
   const [editError, setEditError] = useState('');
   const [isEditSubmitting, setIsEditSubmitting] = useState(false);
 
@@ -112,6 +119,7 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
     setEditEndTime(session.end_time.substring(0, 5));
     setEditNotes(session.notes || '');
     setEditRate(RATE_STEPS[rateToIndex(session.hourly_rate)]);
+    setEditRateTouched(false);
     setEditError('');
   };
 
@@ -131,13 +139,19 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
       return;
     }
 
+    // Se l'utente non ha toccato lo slider, preserviamo la tariffa esatta
+    // originale della sessione invece di sostituirla con il valore arrotondato
+    // allo step più vicino: evita di alterare guadagni storici corretti solo
+    // perché si sta modificando, ad esempio, l'orario.
+    const finalRate = editRateTouched ? editRate : Number(editingSession.hourly_rate);
+
     const updatedData = {
       date: editDate,
       start_time: `${editStartTime}:00`,
       end_time: `${editEndTime}:00`,
       duration_hours: durationHours,
-      hourly_rate: editRate,
-      earnings: roundToQuarterEuro(durationHours * editRate),
+      hourly_rate: finalRate,
+      earnings: roundToQuarterEuro(durationHours * finalRate),
       notes: editNotes.trim() || null
     };
 
@@ -351,7 +365,10 @@ function SessionList({ sessions, hourlyRate, onSaveSession, onUpdateSession, onD
                 />
               </div>
 
-              <RateSlider value={editRate} onChange={setEditRate} />
+              <RateSlider
+                value={editRate}
+                onChange={(rate) => { setEditRate(rate); setEditRateTouched(true); }}
+              />
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setEditingSession(null)} style={{ flex: 1 }} disabled={isEditSubmitting}>
