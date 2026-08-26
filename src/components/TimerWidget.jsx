@@ -1,6 +1,9 @@
 import React, { useState, useEffect, memo } from 'react';
 import { Play, Pause, Square, Edit2, Clock, Coins, Check, AlertCircle, X, Loader2 } from 'lucide-react';
 import { useUIFeedback } from '../hooks/useUIFeedback';
+import { roundToQuarterEuro } from '../utils/rounding';
+import RateSlider, { RATE_STEPS, rateToIndex } from './RateSlider';
+import TimeInput from './TimeInput';
 
 function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer }) {
   const { showToast, confirmDialog } = useUIFeedback();
@@ -13,6 +16,7 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
   const [delayedMinutes, setDelayedMinutes] = useState(10);
   const [delayError, setDelayError] = useState('');
   const [isStopping, setIsStopping] = useState(false);
+  const [sessionRate, setSessionRate] = useState(() => RATE_STEPS[rateToIndex(hourlyRate)]);
 
   useEffect(() => {
     const checkIOS = () => {
@@ -172,8 +176,8 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
       start_time: startTimeFormatted,
       end_time: endTimeFormatted,
       duration_hours: durationHours,
-      hourly_rate: hourlyRate,
-      earnings: durationHours * hourlyRate,
+      hourly_rate: sessionRate,
+      earnings: roundToQuarterEuro(durationHours * sessionRate),
       notes: notes.trim() || null
     };
 
@@ -246,7 +250,7 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
   };
 
   // Guadagno accumulato stimato (evita valori inferiori a zero durante il countdown)
-  const estimatedEarnings = Math.max(0, (elapsedMs / (1000 * 60 * 60)) * hourlyRate);
+  const estimatedEarnings = Math.max(0, (elapsedMs / (1000 * 60 * 60)) * sessionRate);
 
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -330,10 +334,9 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
               <span className="stat-lbl">Iniziato alle</span>
               {isEditingStart ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                  <input
-                    type="time"
+                  <TimeInput
                     value={editStartTimeVal}
-                    onChange={(e) => setEditStartTimeVal(e.target.value)}
+                    onChange={setEditStartTimeVal}
                     style={{ padding: '4px 6px', fontSize: '14px', width: '75px', borderRadius: '4px' }}
                   />
                   <button className="btn-icon" onClick={saveAdjustedStart} style={{ width: '28px', height: '28px', backgroundColor: 'var(--color-brand)', color: 'white' }}>
@@ -356,6 +359,8 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
               )}
             </div>
           </div>
+
+          <RateSlider value={sessionRate} onChange={setSessionRate} />
 
           <div className="form-group" style={{ width: '100%', marginBottom: '0' }}>
             <label htmlFor="timer-notes">Note sulla sessione (opzionale)</label>

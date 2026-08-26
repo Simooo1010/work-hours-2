@@ -60,6 +60,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Push the document below the iOS status bar so sticky header lands correctly */
+html {
+  padding-top: env(safe-area-inset-top, 0px);
+  background-color: var(--bg-secondary);
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -202,14 +208,15 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Common UI Elements */
 .header {
-  padding: 20px 24px 16px 24px;
+  padding: 16px 24px 14px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-secondary);
   position: sticky;
-  top: 0;
+  /* Stick below the status bar, not at y=0 behind it */
+  top: env(safe-area-inset-top, 0px);
   z-index: 90;
 }
 
@@ -268,7 +275,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Toast Notifications */
 .toast-stack {
   position: fixed;
-  top: 20px;
+  top: calc(20px + env(safe-area-inset-top));
   right: 20px;
   left: 20px;
   z-index: 1000;
@@ -404,6 +411,162 @@ button:disabled {
 }
 
 /* Forms & Inputs */
+/* ── Rate Slider ─────────────────────────────────────────────────────── */
+.rate-slider-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+
+.rate-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.rate-slider-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.rate-slider-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-brand);
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.rate-slider-unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-left: 2px;
+}
+
+.rate-slider-track-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+/* Pill-shaped track that contains the pill thumb, Claude-effort-slider style:
+   thumb height == track height so it sits flush, no floating circle. */
+.rate-slider-track {
+  position: relative;
+  height: 34px;
+  border-radius: 14px;
+  background: var(--border-color);
+}
+
+/* Step dots layered inside the track; thumb-width padding keeps them
+   aligned with the native thumb's travel positions (browsers inset the
+   thumb's center by half its width at each end). */
+.rate-slider-dots-row {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 26px;
+  pointer-events: none;
+}
+
+.rate-slider-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+.rate-slider-dot.active {
+  opacity: 0;
+}
+
+.rate-slider-input {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 34px;
+  margin: 0;
+  background: transparent;
+  outline: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.rate-slider-input::-webkit-slider-runnable-track {
+  height: 34px;
+  background: transparent;
+  border-radius: 14px;
+}
+
+.rate-slider-input::-moz-range-track {
+  height: 34px;
+  background: transparent;
+  border-radius: 14px;
+}
+
+.rate-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 52px;
+  height: 34px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.14);
+  cursor: grab;
+  transition: left 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.15s ease,
+              box-shadow 0.15s ease;
+}
+
+.rate-slider-input::-moz-range-thumb {
+  width: 52px;
+  height: 34px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.14);
+  cursor: grab;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rate-slider-input:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(0.97);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.rate-slider-input:active::-moz-range-thumb {
+  cursor: grabbing;
+  transform: scale(0.97);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.rate-slider-labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.rate-slider-end-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+/* ── end Rate Slider ─────────────────────────────────────────────────── */
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -1144,7 +1307,7 @@ input:focus, select:focus, textarea:focus {
     gap: 24px;
   }
   .header {
-    padding: 20px 32px 16px 32px;
+    padding: 16px 32px 14px 32px;
   }
   
   .dashboard-grid {
@@ -1512,7 +1675,7 @@ input:focus, select:focus, textarea:focus {
     padding: 0 16px;
   }
   .header {
-    padding: 16px 16px 12px 16px;
+    padding: 14px 16px 12px 16px;
   }
   .nav-bar {
     height: 60px;
@@ -1562,6 +1725,7 @@ input:focus, select:focus, textarea:focus {
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
+    background-color: var(--bg-secondary); /* Keep status-bar area matching header */
   }
   
   :root {

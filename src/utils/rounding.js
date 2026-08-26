@@ -14,8 +14,20 @@ export const roundHours = (hours) => {
 };
 
 /**
+ * Arrotonda un importo in euro al quarto d'euro più vicino (0.25, 0.50, 0.75, 1.00...).
+ * Garantisce cifre "pulite" nei pagamenti (es. 210.25, 210.50, 210.75).
+ *
+ * @param {number} amount - Importo in euro
+ * @returns {number}
+ */
+export const roundToQuarterEuro = (amount) => {
+  if (isNaN(amount) || amount === null) return 0;
+  return Math.round(Number(amount) * 4) / 4;
+};
+
+/**
  * Calcola i guadagni basati sulle ore arrotondate e sulla tariffa oraria.
- * 
+ *
  * @param {number} hours - Ore in formato decimale
  * @param {number} rate - Tariffa oraria
  * @returns {number} Guadagni arrotondati
@@ -23,7 +35,7 @@ export const roundHours = (hours) => {
 export const getRoundedEarnings = (hours, rate) => {
   if (isNaN(hours) || hours === null) return 0;
   const rounded = roundHours(hours);
-  return rounded * Number(rate);
+  return roundToQuarterEuro(rounded * Number(rate));
 };
 
 /**
@@ -108,15 +120,13 @@ export const calculateRealVsRoundedStats = (sessionsArray) => {
     totalRealHours += realH;
     totalRoundedHours += roundedH;
 
-    // Guadagni reali: ore reali * tariffa oraria
-    totalRealEarnings += realH * rate;
-    // Guadagni arrotondati: ore arrotondate * tariffa oraria
-    totalRoundedEarnings += roundedH * rate;
+    totalRealEarnings += roundToQuarterEuro(realH * rate);
+    totalRoundedEarnings += roundToQuarterEuro(roundedH * rate);
   });
 
   const deltaHours = totalRoundedHours - totalRealHours;
   const deltaMinutes = Math.round(deltaHours * 60);
-  const deltaEarnings = totalRoundedEarnings - totalRealEarnings;
+  const deltaEarnings = roundToQuarterEuro(totalRoundedEarnings - totalRealEarnings);
 
   const percentageHours = totalRealHours > 0 ? (deltaHours / totalRealHours) * 100 : 0;
   const percentageEarnings = totalRealEarnings > 0 ? (deltaEarnings / totalRealEarnings) * 100 : 0;

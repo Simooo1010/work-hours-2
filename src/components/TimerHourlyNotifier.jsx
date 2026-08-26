@@ -49,10 +49,33 @@ export default function TimerHourlyNotifier({ activeTimer }) {
         showToast(message, 'info', 6000);
 
         if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-          try {
-            new Notification('Work Tracker', { body: message, tag: 'work-tracker-hourly' });
-          } catch (err) {
-            console.error('Impossibile mostrare la notifica del browser:', err);
+          const notificationOptions = {
+            body: message,
+            tag: 'work-tracker-hourly',
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            vibrate: [200, 100, 200],
+            renotify: true,
+          };
+
+          // Su iOS (PWA installata sulla schermata Home) le notifiche vanno
+          // mostrate tramite il service worker: `new Notification()` da sola
+          // spesso viene ignorata in modalità standalone. Se un service
+          // worker è attivo lo usiamo sempre; altrimenti ricadiamo sul
+          // costruttore diretto (browser desktop/Android senza SW pronto).
+          const controller = navigator.serviceWorker?.controller;
+          if (controller) {
+            controller.postMessage({
+              type: 'show-notification',
+              title: 'Work Tracker',
+              options: notificationOptions,
+            });
+          } else {
+            try {
+              new Notification('Work Tracker', notificationOptions);
+            } catch (err) {
+              console.error('Impossibile mostrare la notifica del browser:', err);
+            }
           }
         }
       }
@@ -60,7 +83,25 @@ export default function TimerHourlyNotifier({ activeTimer }) {
 
     checkElapsed();
     const interval = setInterval(checkElapsed, 1000);
-    return () => clearInterval(interval);
+
+    // I timer JS vengono sospesi/rallentati da iOS quando l'app va in
+    // background o lo schermo si blocca. Rieseguiamo subito il controllo
+    // non appena l'app torna in primo piano, così la notifica dell'ora
+    // maturata nel frattempo arriva il prima possibile, invece di aspettare
+    // il prossimo tick dell'intervallo (che potrebbe essere ritardato).
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') checkElapsed();
+    };
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', checkElapsed);
+    window.addEventListener('pageshow', checkElapsed);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', checkElapsed);
+      window.removeEventListener('pageshow', checkElapsed);
+    };
   }, [startTime, showToast]);
 
   return null;
