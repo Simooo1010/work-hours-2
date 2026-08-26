@@ -392,6 +392,7 @@ button:disabled {
   padding: 24px;
   box-shadow: var(--shadow-md); /* Tactical ambient shadow */
   transition: var(--transition-normal);
+  overflow: hidden; /* prevent native iOS inputs from overflowing card boundary */
 }
 
 .card:hover {
