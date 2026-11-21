@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
-import { LogIn, Lock, Mail, Database, ShieldAlert, Sparkles } from 'lucide-react';
+import { LogIn, Lock, Mail, Database } from 'lucide-react';
+import { Stamp } from './Tassametro';
 
 export default function Login({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
@@ -38,15 +39,12 @@ export default function Login({ onLoginSuccess }) {
     <div className="login-container">
       <div className="login-card">
         <div className="login-logo">
-          <div className="logo-icon">
-            <Sparkles size={28} />
-          </div>
-          <h1>Work Tracker</h1>
+          <h1>WORK<br />TRACKER</h1>
           <p>Traccia le tue ore e i tuoi guadagni</p>
         </div>
 
         {isMock && (
-          <div className="db-info-box" style={{ borderColor: 'var(--color-accent)', backgroundColor: 'rgba(140, 78, 55, 0.05)' }}>
+          <div className="db-info-box" style={{ borderColor: 'var(--color-accent)' }}>
             <div className="db-info-header" style={{ color: 'var(--color-accent)' }}>
               <Database size={16} />
               <span>Modalità Dispositivo (Locale)</span>
@@ -58,7 +56,7 @@ export default function Login({ onLoginSuccess }) {
         )}
 
         {!isMock && (
-          <div className="db-info-box" style={{ borderColor: 'var(--color-success)', backgroundColor: 'rgba(16, 185, 129, 0.05)' }}>
+          <div className="db-info-box" style={{ borderColor: 'var(--color-success)' }}>
             <div className="db-info-header" style={{ color: 'var(--color-success)' }}>
               <Database size={16} />
               <span>Database Cloud Attivo</span>
@@ -70,9 +68,9 @@ export default function Login({ onLoginSuccess }) {
         )}
 
         {error && (
-          <div className="login-error">
-            <ShieldAlert size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
-            {error}
+          <div className="login-error" role="alert">
+            <Stamp>ERRORE</Stamp>
+            <span className="mono-line">{error}</span>
           </div>
         )}
 
@@ -111,7 +109,7 @@ export default function Login({ onLoginSuccess }) {
 
           <button type="submit" className="btn btn-primary" disabled={loading} style={{ marginTop: '8px' }}>
             <LogIn size={18} />
-            {loading ? 'Accesso in corso...' : 'Accedi'}
+            {loading ? 'ACCESSO...' : 'ENTRA'}
           </button>
         </form>
       </div>

@@ -494,11 +494,11 @@ function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
               {stats.deltaMinutes === 0 ? (
                 <span>Le ore reali e arrotondate coincidono.</span>
               ) : stats.deltaMinutes > 0 ? (
-                <span style={{ color: '#10b981', fontWeight: '600' }}>
+                <span style={{ color: 'currentColor', fontWeight: '600' }}>
                   🟢 +{stats.deltaMinutes}m in più per l'arrotondamento per eccesso.
                 </span>
               ) : (
-                <span style={{ color: '#ef4444', fontWeight: '600' }}>
+                <span style={{ color: 'currentColor', fontWeight: '600' }}>
                   🔴 {stats.deltaMinutes}m in meno per l'arrotondamento per difetto.
                 </span>
               )}
@@ -535,7 +535,7 @@ function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
             </div>
 
             <div style={{ marginTop: '14px', fontSize: '12px', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-tertiary)', padding: '10px 12px', borderRadius: '12px' }}>
-              Impatto economico netto: <strong style={{ color: stats.deltaEarnings >= 0 ? '#10b981' : '#ef4444' }}>{stats.deltaEarnings >= 0 ? '+' : ''}€{stats.deltaEarnings.toFixed(2)}</strong> rispetto alle ore reali effettive.
+              Impatto economico netto: <strong style={{ color: stats.deltaEarnings >= 0 ? 'currentColor' : 'currentColor' }}>{stats.deltaEarnings >= 0 ? '+' : ''}€{stats.deltaEarnings.toFixed(2)}</strong> rispetto alle ore reali effettive.
             </div>
           </div>
 
@@ -546,7 +546,7 @@ function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
                 <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.05em', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
                   Efficienza & Rapporto
                 </span>
-                <Sparkles size={18} style={{ color: '#f59e0b' }} />
+                <Sparkles size={18} style={{ color: 'currentColor' }} />
               </div>
 
               <div style={{ fontSize: isMobile ? '24px' : '28px', fontWeight: '800', color: 'var(--text-primary)', lineHeight: 1 }}>
@@ -565,7 +565,7 @@ function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
                   style={{ 
                     width: `${Math.min(Math.max((stats.roundedHours / (stats.realHours || 1)) * 100, 0), 100)}%`, 
                     height: '100%', 
-                    backgroundColor: stats.deltaHours >= 0 ? '#10b981' : '#ef4444',
+                    backgroundColor: stats.deltaHours >= 0 ? 'currentColor' : 'currentColor',
                     borderRadius: '4px'
                   }} 
                 />
@@ -616,17 +616,17 @@ function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
             gap: '8px',
             lineHeight: '1.4',
             backgroundColor: 
-              syncFeedback.type === 'error' ? 'rgba(239, 68, 68, 0.12)' : 
-              syncFeedback.type === 'warning' ? 'rgba(245, 158, 11, 0.12)' : 
-              'rgba(16, 185, 129, 0.12)',
+              syncFeedback.type === 'error' ? 'transparent' : 
+              syncFeedback.type === 'warning' ? 'transparent' : 
+              'transparent',
             color: 
-              syncFeedback.type === 'error' ? '#ef4444' : 
-              syncFeedback.type === 'warning' ? '#f59e0b' : 
-              '#10b981',
+              syncFeedback.type === 'error' ? 'currentColor' : 
+              syncFeedback.type === 'warning' ? 'currentColor' : 
+              'currentColor',
             border: `1px solid ${
-              syncFeedback.type === 'error' ? 'rgba(239, 68, 68, 0.25)' : 
-              syncFeedback.type === 'warning' ? 'rgba(245, 158, 11, 0.25)' : 
-              'rgba(16, 185, 129, 0.25)'
+              syncFeedback.type === 'error' ? 'transparent' : 
+              syncFeedback.type === 'warning' ? 'transparent' : 
+              'transparent'
             }`
           }}>
             {syncFeedback.type === 'error' ? <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '1px' }} /> : 
@@ -648,13 +648,13 @@ function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
             </div>
             <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '14px', borderRadius: '14px' }}>
               <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>Incassato (Finance Tracker)</div>
-              <div style={{ fontSize: '22px', fontWeight: '800', color: '#10b981', marginTop: '2px' }}>
+              <div style={{ fontSize: '22px', fontWeight: '800', color: 'currentColor', marginTop: '2px' }}>
                 €{financeSummary.totalReceived.toFixed(2)}
               </div>
             </div>
             <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '14px', borderRadius: '14px' }}>
               <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600' }}>Saldo in Attesa / Sospeso</div>
-              <div style={{ fontSize: '22px', fontWeight: '800', color: financeSummary.totalPending > 0 ? '#ef4444' : '#10b981', marginTop: '2px' }}>
+              <div style={{ fontSize: '22px', fontWeight: '800', color: financeSummary.totalPending > 0 ? 'currentColor' : 'currentColor', marginTop: '2px' }}>
                 €{financeSummary.totalPending.toFixed(2)}
               </div>
             </div>
@@ -673,8 +673,8 @@ function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
               </div>
               <span style={{
                 fontSize: '11px', fontWeight: '800', padding: '3px 10px', borderRadius: '9999px',
-                backgroundColor: paymentQuality.paymentCompletionPct >= 100 ? 'rgba(16,185,129,0.15)' : paymentQuality.paymentCompletionPct >= 80 ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)',
-                color: paymentQuality.paymentCompletionPct >= 100 ? '#10b981' : paymentQuality.paymentCompletionPct >= 80 ? '#f59e0b' : '#ef4444'
+                backgroundColor: paymentQuality.paymentCompletionPct >= 100 ? 'transparent' : paymentQuality.paymentCompletionPct >= 80 ? 'transparent' : 'transparent',
+                color: paymentQuality.paymentCompletionPct >= 100 ? 'currentColor' : paymentQuality.paymentCompletionPct >= 80 ? 'currentColor' : 'currentColor'
               }}>
                 {paymentQuality.paymentCompletionPct.toFixed(1)}% saldato
               </span>
@@ -693,17 +693,17 @@ function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
 
               <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '14px', borderRadius: '12px' }}>
                 <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginBottom: '4px' }}>Δ Tariffa Oraria</div>
-                <div style={{ fontSize: '20px', fontWeight: '800', lineHeight: 1, color: paymentQuality.rateDelta >= 0 ? '#10b981' : '#ef4444' }}>
+                <div style={{ fontSize: '20px', fontWeight: '800', lineHeight: 1, color: paymentQuality.rateDelta >= 0 ? 'currentColor' : 'currentColor' }}>
                   {paymentQuality.rateDelta >= 0 ? '+' : ''}€{paymentQuality.rateDelta.toFixed(2)}<span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--text-muted)' }}>/h</span>
                 </div>
-                <div style={{ fontSize: '11px', marginTop: '4px', color: paymentQuality.rateDelta >= 0 ? '#10b981' : '#ef4444', fontWeight: '600' }}>
+                <div style={{ fontSize: '11px', marginTop: '4px', color: paymentQuality.rateDelta >= 0 ? 'currentColor' : 'currentColor', fontWeight: '600' }}>
                   {paymentQuality.rateDelta >= 0 ? '▲' : '▼'} {Math.abs(paymentQuality.rateDeltaPct).toFixed(1)}% rispetto al previsto
                 </div>
               </div>
 
               <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '14px', borderRadius: '12px', gridColumn: isMobile ? '1 / -1' : 'auto' }}>
                 <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '600', marginBottom: '4px' }}>Surplus / Deficit</div>
-                <div style={{ fontSize: '20px', fontWeight: '800', lineHeight: 1, color: paymentQuality.absoluteDelta >= 0 ? '#10b981' : '#ef4444' }}>
+                <div style={{ fontSize: '20px', fontWeight: '800', lineHeight: 1, color: paymentQuality.absoluteDelta >= 0 ? 'currentColor' : 'currentColor' }}>
                   {paymentQuality.absoluteDelta >= 0 ? '+' : ''}€{paymentQuality.absoluteDelta.toFixed(2)}
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
@@ -722,14 +722,14 @@ function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
                   width: `${Math.min(paymentQuality.paymentCompletionPct, 100)}%`,
                   height: '100%',
                   borderRadius: '4px',
-                  backgroundColor: paymentQuality.paymentCompletionPct >= 100 ? '#10b981' : paymentQuality.paymentCompletionPct >= 80 ? '#f59e0b' : '#ef4444',
+                  backgroundColor: paymentQuality.paymentCompletionPct >= 100 ? 'currentColor' : paymentQuality.paymentCompletionPct >= 80 ? 'currentColor' : 'currentColor',
                   transition: 'width 0.4s ease'
                 }} />
               </div>
               {paymentQuality.absoluteDelta !== 0 && (
                 <div style={{ marginTop: '10px', fontSize: '12px', fontWeight: '600', padding: '8px 12px', borderRadius: '10px',
-                  backgroundColor: paymentQuality.absoluteDelta > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-                  color: paymentQuality.absoluteDelta > 0 ? '#10b981' : '#ef4444'
+                  backgroundColor: paymentQuality.absoluteDelta > 0 ? 'transparent' : 'transparent',
+                  color: paymentQuality.absoluteDelta > 0 ? 'currentColor' : 'currentColor'
                 }}>
                   {paymentQuality.absoluteDelta > 0
                     ? `🟢 Ricevuto €${paymentQuality.absoluteDelta.toFixed(2)} in più rispetto al dovuto per le ore coperte.`
@@ -795,11 +795,11 @@ function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
                     </div>
                     <div>
                       <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Incassato: </span>
-                      <strong style={{ color: m.incomeAmount > 0 ? '#10b981' : 'var(--text-secondary)' }}>€{m.incomeAmount.toFixed(2)}</strong>
+                      <strong style={{ color: m.incomeAmount > 0 ? 'currentColor' : 'var(--text-secondary)' }}>€{m.incomeAmount.toFixed(2)}</strong>
                     </div>
                     <div>
                       <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Diff: </span>
-                      <strong style={{ color: m.difference >= 0 ? '#10b981' : '#ef4444' }}>
+                      <strong style={{ color: m.difference >= 0 ? 'currentColor' : 'currentColor' }}>
                         {m.difference >= 0 ? '+' : ''}€{m.difference.toFixed(2)}
                       </strong>
                     </div>
@@ -840,10 +840,10 @@ function AnalyticsAndFinance({ sessions, hourlyRate, onRefreshSessions }) {
                       <td style={{ padding: '14px 16px', textAlign: 'right', fontWeight: '700', color: 'var(--text-primary)' }}>
                         €{m.expectedEarnings.toFixed(2)}
                       </td>
-                      <td style={{ padding: '14px 16px', textAlign: 'right', fontWeight: '700', color: m.incomeAmount > 0 ? '#10b981' : 'var(--text-secondary)' }}>
+                      <td style={{ padding: '14px 16px', textAlign: 'right', fontWeight: '700', color: m.incomeAmount > 0 ? 'currentColor' : 'var(--text-secondary)' }}>
                         €{m.incomeAmount.toFixed(2)}
                       </td>
-                      <td style={{ padding: '14px 16px', textAlign: 'right', fontWeight: '800', color: m.difference >= 0 ? '#10b981' : '#ef4444' }}>
+                      <td style={{ padding: '14px 16px', textAlign: 'right', fontWeight: '800', color: m.difference >= 0 ? 'currentColor' : 'currentColor' }}>
                         {m.difference >= 0 ? '+' : ''}€{m.difference.toFixed(2)}
                       </td>
                     </tr>
@@ -936,8 +936,8 @@ const deltaBadgeStyle = (val) => ({
   fontWeight: '700',
   padding: '4px 8px',
   borderRadius: '9999px',
-  backgroundColor: val > 0 ? 'rgba(16, 185, 129, 0.15)' : val < 0 ? 'rgba(239, 68, 68, 0.15)' : 'var(--bg-tertiary)',
-  color: val > 0 ? '#10b981' : val < 0 ? '#ef4444' : 'var(--text-secondary)'
+  backgroundColor: val > 0 ? 'transparent' : val < 0 ? 'transparent' : 'var(--bg-tertiary)',
+  color: val > 0 ? 'currentColor' : val < 0 ? 'currentColor' : 'var(--text-secondary)'
 });
 
 const statusBadgeStyle = (status) => ({
@@ -948,11 +948,11 @@ const statusBadgeStyle = (status) => ({
   display: 'inline-block',
   whiteSpace: 'nowrap',
   backgroundColor: 
-    status === 'saldato' ? 'rgba(16, 185, 129, 0.15)' :
-    status === 'extra' ? 'rgba(59, 130, 246, 0.15)' :
-    status === 'parziale' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+    status === 'saldato' ? 'transparent' :
+    status === 'extra' ? 'transparent' :
+    status === 'parziale' ? 'transparent' : 'transparent',
   color: 
-    status === 'saldato' ? '#10b981' :
-    status === 'extra' ? '#3b82f6' :
-    status === 'parziale' ? '#f59e0b' : '#ef4444'
+    status === 'saldato' ? 'currentColor' :
+    status === 'extra' ? 'currentColor' :
+    status === 'parziale' ? 'currentColor' : 'currentColor'
 });

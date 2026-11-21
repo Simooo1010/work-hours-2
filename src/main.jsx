@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import './tassametro.css'
 import App from './App.jsx'
 import { UIFeedbackProvider } from './components/UIFeedback.jsx'
 

@@ -1,9 +1,12 @@
 import React, { useMemo, memo } from 'react';
-import { TrendingUp, Clock, DollarSign, Calendar } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import TimerWidget from './TimerWidget';
-import { roundHours, getRoundedEarnings, formatHoursAndMinutes } from '../utils/rounding';
+import { roundHours, formatHoursAndMinutes } from '../utils/rounding';
+import { TimeCard } from './Tassametro';
+import { formatHoursIt, formatEuro } from '../utils/format';
+import { buildWeek, mondayOf } from '../utils/week';
 
-function Dashboard({ sessions, hourlyRate, activeTimer, setActiveTimer, onSaveSession }) {
+function Dashboard({ sessions, hourlyRate, activeTimer, setActiveTimer, onSaveSession, onOpenWeek }) {
   
   // Calcolo dei totali storici CON ARROTONDAMENTO applicato (richiesto per la dashboard principale)
   const roundedTotals = useMemo(() => {
@@ -34,30 +37,16 @@ function Dashboard({ sessions, hourlyRate, activeTimer, setActiveTimer, onSaveSe
     return formatted.charAt(0).toUpperCase() + formatted.slice(1).replace('.', '');
   };
 
+  const todayHours = todaySessions.reduce((a, s) => a + roundHours(Number(s.duration_hours)), 0);
+  const todayEarnings = todaySessions.reduce(
+    (a, s) => a + roundHours(Number(s.duration_hours)) * Number(s.hourly_rate),
+    0
+  );
+  const week = useMemo(() => buildWeek(sessions, mondayOf(new Date())), [sessions]);
+
   return (
     <div className="view-content dashboard-grid">
-      {/* 1. SEZIONE TOTALI STORICI (Arrotondati) */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        <div className="card-title" style={{ marginBottom: '4px' }}>
-          <TrendingUp size={18} color="var(--color-brand)" />
-          <span>Riepilogo Totale (Arrotondato)</span>
-        </div>
-        <div className="stats-grid">
-          <div className="stat-box highlight">
-            <span className="stat-lbl">Guadagno Totale</span>
-            <span className="stat-val earnings">€{roundedTotals.earnings.toFixed(2)}</span>
-          </div>
-          <div className="stat-box">
-            <span className="stat-lbl">Ore Totali</span>
-            <span className="stat-val">{formatHoursAndMinutes(roundedTotals.hours)}</span>
-          </div>
-        </div>
-        <div style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'right' }}>
-          Conteggio basato su {roundedTotals.count} sessioni registrate
-        </div>
-      </div>
-
-      {/* 2. TIMER DI TRACCIAMENTO IN TEMPO REALE */}
+      {/* 1. TIMER: split-flap + tassametro */}
       <TimerWidget
         hourlyRate={hourlyRate}
         onSaveSession={onSaveSession}
@@ -65,53 +54,55 @@ function Dashboard({ sessions, hourlyRate, activeTimer, setActiveTimer, onSaveSe
         setActiveTimer={setActiveTimer}
       />
 
-      {/* 3. LISTA DELLE SESSIONI DI OGGI */}
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div className="card-title" style={{ marginBottom: '4px' }}>
-          <Calendar size={18} color="var(--color-brand)" />
-          <span>Sessioni di Oggi ({formatDateIt(todayStr)})</span>
+      {/* 2. RIEPILOGO DI OGGI */}
+      <div className="card dashboard-today">
+        <div className="mono-label">OGGI · {formatDateIt(todayStr)}</div>
+        <div className="mono-line" style={{ fontSize: '15px' }}>
+          Oggi {formatHoursIt(todayHours)} h · € {formatEuro(todayEarnings)}
         </div>
-        
         {todaySessions.length === 0 ? (
-          <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '20px 0', fontSize: '14px' }}>
-            Nessuna sessione registrata oggi. Avvia il timer sopra per iniziare!
-          </p>
+          <p className="mono-line">Nessuna sessione registrata oggi. Avvia il timer per iniziare.</p>
         ) : (
           <div className="sessions-list-container">
             {todaySessions.map((session) => {
               const rHours = roundHours(Number(session.duration_hours));
               const rEarnings = rHours * Number(session.hourly_rate);
-              
               return (
                 <div key={session.id} className="session-item">
                   <div className="session-info">
-                    <div className="session-date" style={{ fontSize: '14px' }}>
-                      {session.notes || 'Sessione di Lavoro'}
-                    </div>
-                    <div className="session-time" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
-                      <Clock size={12} />
+                    <div className="session-date">{session.notes || 'Sessione di Lavoro'}</div>
+                    <div className="session-time">
+                      <Clock size={12} aria-hidden="true" />
                       <span>
                         {session.start_time.substring(0, 5)} - {session.end_time.substring(0, 5)}
                       </span>
-                      <span style={{ color: 'var(--text-muted)' }}>
-                        (@ €{Number(session.hourly_rate).toFixed(2)}/h)
-                      </span>
+                      <span>(@ €{Number(session.hourly_rate).toFixed(2)}/h)</span>
                     </div>
                   </div>
-
                   <div className="session-financial">
-                    <span className="session-earnings" style={{ fontSize: '14px' }}>
-                      €{rEarnings.toFixed(2)}
-                    </span>
-                    <span className="session-hours" style={{ fontSize: '12px' }}>
-                      {formatHoursAndMinutes(rHours)} (arr.)
-                    </span>
+                    <span className="session-earnings">€{rEarnings.toFixed(2)}</span>
+                    <span className="session-hours">{formatHoursAndMinutes(rHours)} (arr.)</span>
                   </div>
                 </div>
               );
             })}
           </div>
         )}
+      </div>
+
+      {/* 3. SETTIMANA IN MINIATURA (tap = Settimana) */}
+      <button
+        type="button"
+        className="card dashboard-week-mini"
+        onClick={onOpenWeek}
+        aria-label="Apri la settimana"
+      >
+        <div className="mono-label">QUESTA SETTIMANA · {formatHoursIt(week.hours)} h · € {formatEuro(week.earnings)}</div>
+        <TimeCard days={week.days} empty={week.count === 0} />
+      </button>
+
+      <div className="mono-line dashboard-total">
+        Totale storico arrotondato: € {formatEuro(roundedTotals.earnings)} · {formatHoursAndMinutes(roundedTotals.hours)} · {roundedTotals.count} sessioni
       </div>
     </div>
   );
