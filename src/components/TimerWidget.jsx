@@ -1,9 +1,11 @@
 import React, { useState, useEffect, memo } from 'react';
-import { Play, Pause, Square, Edit2, Clock, Coins, Check, AlertCircle, X, Loader2 } from 'lucide-react';
+import { Play, Pause, Square, Edit2, Clock, Check, X, Loader2 } from 'lucide-react';
 import { useUIFeedback } from '../hooks/useUIFeedback';
 import { roundToQuarterEuro } from '../utils/rounding';
 import RateSlider, { RATE_STEPS, rateToIndex } from './RateSlider';
 import TimeInput from './TimeInput';
+import { FlapRow, Meter, RoundingRuler } from './Tassametro';
+import { formatEuro } from '../utils/format';
 
 function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer }) {
   const { showToast, confirmDialog } = useUIFeedback();
@@ -290,84 +292,97 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
   // Guadagno accumulato stimato (evita valori inferiori a zero durante il countdown)
   const estimatedEarnings = Math.max(0, (elapsedMs / (1000 * 60 * 60)) * (sessionRateTouched ? sessionRate : Number(hourlyRate)));
 
+  const activeRate = sessionRateTouched ? sessionRate : Number(hourlyRate);
+  const elapsedHours = Math.max(0, elapsedMs) / (1000 * 60 * 60);
+  const startedLabel = activeTimer
+    ? new Date(activeTimer.startTime).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+    : '';
+  const statusWord = !activeTimer
+    ? 'FERMO'
+    : elapsedMs < 0
+      ? 'AVVIO PROGRAMMATO'
+      : activeTimer.isPaused
+        ? 'IN PAUSA'
+        : 'IN CORSO';
+
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div className="card-title">
-        <Clock size={18} color="var(--color-brand)" />
-        <span>Tracciamento in Tempo Reale</span>
+    <div className="card timer-card">
+      <div className="mono-label timer-status">
+        {activeTimer ? `${statusWord} · iniziato alle ${startedLabel}` : statusWord}
       </div>
 
+      <FlapRow
+        text={activeTimer ? formatElapsed(elapsedMs) : '00:00:00'}
+        outlined={!activeTimer}
+        label={`Tempo trascorso ${activeTimer ? formatElapsed(elapsedMs) : '00:00:00'}`}
+      />
+
+      <div className="timer-earn-head">
+        <span className="mono-label">GUADAGNO REALE</span>
+        <span className="mono-label">a € {formatEuro(activeRate)}/h</span>
+      </div>
+      <Meter amount={activeTimer ? estimatedEarnings : 0} outlined={!activeTimer} />
+
       {!activeTimer ? (
-        <div style={{ textAlign: 'center', padding: '20px 0' }}>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>
-            Nessuna sessione attiva al momento. Avvia il timer quando inizi a lavorare.
-          </p>
+        <div className="timer-idle">
+          <p className="mono-line">Nessuna sessione attiva. Avvia il timer quando inizi a lavorare.</p>
           <div className="btn-split-container">
-            <button 
-              className="btn-split-main"
-              onClick={handleStart}
-            >
-              <Play size={20} fill="white" color="white" />
-              Inizia Sessione
+            <button className="btn-split-main" onClick={handleStart}>
+              <Play size={22} aria-hidden="true" />
+              INIZIA
             </button>
-            <div
+            <button
+              type="button"
               className="btn-split-timer"
               onClick={() => { setShowDelayedModal(true); setDelayError(''); setScheduledTimeError(''); }}
               title="Programma avvio sessione"
+              aria-label="Programma avvio sessione"
             >
-              <Clock size={20} color="white" />
-            </div>
+              <Clock size={22} aria-hidden="true" />
+            </button>
           </div>
         </div>
       ) : (
         <div className="timer-container">
-          <div className={`timer-circle ${!activeTimer.isPaused ? 'active' : ''}`}>
-            <div className={`timer-display ${!activeTimer.isPaused ? 'active' : ''}`}>
-              {formatElapsed(elapsedMs)}
-            </div>
-             <div className="timer-label">
-              {elapsedMs < 0 ? 'Avvio programmato' : (activeTimer.isPaused ? 'In Pausa' : 'In Corso')}
-            </div>
+          <RoundingRuler hours={elapsedHours} rate={activeRate} />
+
+          <div className="timer-start-edit">
+            <span className="mono-label">Iniziato alle</span>
+            {isEditingStart ? (
+              <div className="timer-start-edit-row">
+                <TimeInput
+                  value={editStartTimeVal}
+                  onChange={setEditStartTimeVal}
+                  style={{ width: '90px' }}
+                />
+                <button className="btn-icon" onClick={saveAdjustedStart} aria-label="Conferma ora di inizio">
+                  <Check size={16} />
+                </button>
+              </div>
+            ) : (
+              <div className="timer-start-edit-row">
+                <strong className="timer-start-val">{startedLabel}</strong>
+                <button
+                  className="btn-icon"
+                  onClick={startEditingStart}
+                  title="Modifica ora di inizio"
+                  aria-label="Modifica ora di inizio"
+                >
+                  <Edit2 size={14} />
+                </button>
+              </div>
+            )}
           </div>
 
-          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
-            <div className="stat-box" style={{ flex: 1, padding: '10px 14px' }}>
-              <span className="stat-lbl" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Coins size={12} color="var(--color-success)" /> Stima Guadagno
-              </span>
-              <span className="stat-val earnings" style={{ fontSize: '18px' }}>
-                €{estimatedEarnings.toFixed(2)}
-              </span>
-            </div>
-
-            <div className="stat-box" style={{ flex: 1, padding: '10px 14px', position: 'relative' }}>
-              <span className="stat-lbl">Iniziato alle</span>
-              {isEditingStart ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                  <TimeInput
-                    value={editStartTimeVal}
-                    onChange={setEditStartTimeVal}
-                    style={{ padding: '4px 6px', fontSize: '14px', width: '75px', borderRadius: '4px' }}
-                  />
-                  <button className="btn-icon" onClick={saveAdjustedStart} style={{ width: '28px', height: '28px', backgroundColor: 'var(--color-brand)', color: 'white' }}>
-                    <Check size={14} />
-                  </button>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px' }}>
-                  <span style={{ fontSize: '16px', fontWeight: '600' }}>
-                    {new Date(activeTimer.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                  <button 
-                    onClick={startEditingStart} 
-                    style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
-                    title="Modifica ora di inizio"
-                  >
-                    <Edit2 size={13} />
-                  </button>
-                </div>
-              )}
-            </div>
+          <div className="form-group" style={{ width: '100%', marginBottom: 0 }}>
+            <label htmlFor="timer-notes">COSA STAI FACENDO?</label>
+            <input
+              id="timer-notes"
+              type="text"
+              placeholder="Note sulla sessione (opzionale)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
           </div>
 
           <RateSlider
@@ -375,40 +390,28 @@ function TimerWidget({ hourlyRate, onSaveSession, activeTimer, setActiveTimer })
             onChange={(rate) => { setSessionRate(rate); setSessionRateTouched(true); }}
           />
 
-          <div className="form-group" style={{ width: '100%', marginBottom: '0' }}>
-            <label htmlFor="timer-notes">Note sulla sessione (opzionale)</label>
-            <input
-              id="timer-notes"
-              type="text"
-              placeholder="Cosa stai facendo?"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              style={{ fontSize: '14px', padding: '10px' }}
-            />
-          </div>
-
           <div className="timer-controls">
             {elapsedMs < 0 ? (
-              <button className="btn btn-danger" onClick={handleStop} style={{ flex: 1 }} disabled={isStopping}>
-                {isStopping ? <Loader2 size={16} className="animate-spin" /> : <Square size={16} fill="white" />}
-                Annulla Avvio
+              <button className="btn btn-danger big-btn" onClick={handleStop} disabled={isStopping}>
+                {isStopping ? <Loader2 size={18} className="animate-spin" /> : <Square size={18} />}
+                ANNULLA AVVIO
               </button>
             ) : (
               <>
                 {activeTimer.isPaused ? (
-                  <button className="btn btn-primary" onClick={handleResume} style={{ flex: 1 }} disabled={isStopping}>
-                    <Play size={16} fill="white" />
-                    Riprendi
+                  <button className="btn btn-secondary big-btn" onClick={handleResume} disabled={isStopping}>
+                    <Play size={18} />
+                    RIPRENDI
                   </button>
                 ) : (
-                  <button className="btn btn-secondary" onClick={handlePause} style={{ flex: 1 }} disabled={isStopping}>
-                    <Pause size={16} />
-                    Pausa
+                  <button className="btn btn-secondary big-btn" onClick={handlePause} disabled={isStopping}>
+                    <Pause size={18} />
+                    PAUSA
                   </button>
                 )}
-                <button className="btn btn-danger" onClick={handleStop} style={{ flex: 1 }} disabled={isStopping}>
-                  {isStopping ? <Loader2 size={16} className="animate-spin" /> : <Square size={16} fill="white" />}
-                  Termina
+                <button className="btn btn-primary big-btn" onClick={handleStop} disabled={isStopping}>
+                  {isStopping ? <Loader2 size={18} className="animate-spin" /> : <Square size={18} />}
+                  FERMA E SALVA
                 </button>
               </>
             )}

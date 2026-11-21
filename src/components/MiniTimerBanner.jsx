@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FlapRow, Meter } from './Tassametro';
 
 // Formatta millisecondi in HH:MM:SS (supporta countdown negativi per avvii programmati)
 function formatElapsed(ms) {
@@ -15,7 +16,7 @@ function formatElapsed(ms) {
 
 // Componente isolato: gestisce il proprio tick al secondo così da non forzare
 // il re-render dell'intera App (e della vista corrente) ogni secondo.
-export default function MiniTimerBanner({ activeTimer, onClick }) {
+export default function MiniTimerBanner({ activeTimer, rate: rateProp, onClick }) {
   const [elapsedMs, setElapsedMs] = useState(0);
 
   useEffect(() => {
@@ -43,34 +44,18 @@ export default function MiniTimerBanner({ activeTimer, onClick }) {
 
   if (!activeTimer) return null;
 
+  const hours = Math.max(0, elapsedMs) / 3600000;
+  const rate = Number(rateProp || 0);
   return (
-    <div style={{ padding: '16px 20px 0 20px' }}>
-      <div className="mini-timer-banner" onClick={onClick}>
-        <div className="mini-timer-info">
-          <div
-            className="mini-timer-pulse"
-            style={{ backgroundColor: elapsedMs < 0 ? '#d97706' : 'var(--color-brand)' }}
-          ></div>
-          <div>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>
-              {elapsedMs < 0 ? 'Avvio programmato' : 'Sessione in corso'}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Note: {activeTimer.notes || 'Nessuna'}</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span
-            style={{
-              fontFamily: 'var(--font-heading)',
-              fontWeight: '700',
-              fontSize: '18px',
-              color: elapsedMs < 0 ? '#d97706' : 'var(--color-brand)'
-            }}
-          >
-            {formatElapsed(elapsedMs)}
-          </span>
-        </div>
-      </div>
+    <div className="mini-timer-wrap">
+      <button type="button" className="mini-timer-banner" onClick={onClick} aria-label="Torna al timer">
+        <span className="mini-timer-info">
+          <span className="mini-timer-pulse" aria-hidden="true"></span>
+          <span className="mono-label">{elapsedMs < 0 ? 'AVVIO PROGRAMMATO' : activeTimer.isPaused ? 'IN PAUSA' : 'IN CORSO'}</span>
+        </span>
+        <FlapRow text={formatElapsed(elapsedMs)} size="S" label={`Tempo trascorso ${formatElapsed(elapsedMs)}`} />
+        {rate > 0 && <Meter amount={hours * rate} size="S" />}
+      </button>
     </div>
   );
 }

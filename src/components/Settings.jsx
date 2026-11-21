@@ -132,7 +132,7 @@ function Settings({ hourlyRate, onUpdateRate, user, onLogout }) {
               I tuoi dati sono ospitati in modo sicuro sul cloud di Supabase. Le sessioni e le impostazioni sono crittografate e accessibili da qualsiasi browser autorizzato (compreso il tuo iPhone su Safari).
             </p>
 
-            <div className="db-info-box" style={{ borderColor: 'var(--border-color)', backgroundColor: 'rgba(16, 185, 129, 0.02)' }}>
+            <div className="db-info-box" style={{ borderColor: 'var(--border-color)', backgroundColor: 'transparent' }}>
               <div style={{ fontWeight: '600', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
                 <Shield size={14} />
                 <span>Sicurezza attiva:</span>

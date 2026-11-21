@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { LayoutDashboard, BarChart2, Calendar, Settings as SettingsIcon, AlertCircle, Sparkles, Loader2, TrendingUp } from 'lucide-react';
 import Login from './components/Login';
+import WeekView from './components/WeekView';
 import Dashboard from './components/Dashboard';
 import Analysis from './components/Analysis';
 import SessionList from './components/SessionList';
@@ -346,6 +347,14 @@ export default function App() {
   // Renderizza la vista corrente
   const renderView = () => {
     switch (activeView) {
+      case 'week':
+        return (
+          <WeekView
+            sessions={sessions}
+            hourlyRate={hourlyRate}
+            onOpenFinance={() => setActiveView('analytics')}
+          />
+        );
       case 'dashboard':
         return (
           <Dashboard 
@@ -387,6 +396,7 @@ export default function App() {
             activeTimer={activeTimer}
             setActiveTimer={setActiveTimer}
             onSaveSession={handleSaveSession}
+            onOpenWeek={() => setActiveView('week')}
           />
         );
     }
@@ -424,7 +434,11 @@ export default function App() {
         <nav className="sidebar-nav">
           <button className={`sidebar-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
             <LayoutDashboard size={20} />
-            <span>Dashboard</span>
+            <span>Timer</span>
+          </button>
+          <button className={`sidebar-item ${activeView === 'week' ? 'active' : ''}`} onClick={() => setActiveView('week')}>
+            <Calendar size={20} />
+            <span>Settimana</span>
           </button>
           <button className={`sidebar-item ${activeView === 'analytics' ? 'active' : ''}`} onClick={() => setActiveView('analytics')}>
             <TrendingUp size={20} />
@@ -465,7 +479,7 @@ export default function App() {
 
         {/* Banner fluttuante se c'è un timer attivo in background (non nella vista dashboard) */}
         {activeTimer && activeView !== 'dashboard' && (
-          <MiniTimerBanner activeTimer={activeTimer} onClick={() => setActiveView('dashboard')} />
+          <MiniTimerBanner activeTimer={activeTimer} rate={hourlyRate} onClick={() => setActiveView('dashboard')} />
         )}
 
         {/* Contenuto della vista corrente */}
@@ -476,7 +490,11 @@ export default function App() {
       <nav className="nav-bar mobile-nav">
         <button className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
           <LayoutDashboard />
-          <span>Home</span>
+          <span>Timer</span>
+        </button>
+        <button className={`nav-item ${activeView === 'week' ? 'active' : ''}`} onClick={() => setActiveView('week')}>
+          <Calendar />
+          <span>Settimana</span>
         </button>
         <button className={`nav-item ${activeView === 'analytics' ? 'active' : ''}`} onClick={() => setActiveView('analytics')}>
           <TrendingUp />
